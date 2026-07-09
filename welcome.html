@@ -401,14 +401,12 @@
 
     // 꽃가루 발사 이펙트
     function fireConfettiEffect() {
-      // 1) 중앙 하단 팡파레
       confetti({
         particleCount: 150,
         spread: 80,
         origin: { y: 0.75 }
       });
 
-      // 2) 왼쪽 사이드 팡파레
       setTimeout(() => {
         confetti({
           particleCount: 50,
@@ -418,7 +416,6 @@
         });
       }, 200);
 
-      // 3) 오른쪽 사이드 팡파레
       setTimeout(() => {
         confetti({
           particleCount: 50,
@@ -429,13 +426,13 @@
       }, 400);
     }
 
-    // 3. 타임라인(하단 목록) 갱신 함수
+    // 3. 타임라인(하단 목록) 갱신 함수 (테이블명 wedding_visitor_logs 로 변경 적용)
     async function loadRecentTimeline() {
       if (!isSupabaseActive) return;
 
       try {
         const { data, error } = await supabaseClient
-          .from("visitor_logs")
+          .from("wedding_visitor_logs") // 테이블명 변경 완료
           .select("*")
           .order("visited_at", { ascending: false })
           .limit(10);
@@ -463,20 +460,15 @@
       }
     }
 
-    // 4. Supabase Realtime 실시간 이벤트 구독
+    // 4. Supabase Realtime 실시간 이벤트 구독 (테이블명 wedding_visitor_logs 로 변경 적용)
     if (isSupabaseActive) {
-      // 최초 하단 목록 로드
       loadRecentTimeline();
 
       supabaseClient
-        .channel("public:visitor_logs")
-        .on("postgres_changes", { event: "INSERT", schema: "public", table: "visitor_logs" }, payload => {
+        .channel("public:wedding_visitor_logs") // 채널명 변경
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "wedding_visitor_logs" }, payload => {
           console.log("새로운 하객 입장 감지:", payload.new);
-          
-          // 실시간 팝업 애니메이션 구동
           triggerWelcomeAnimation(payload.new.guest_name, payload.new.relation);
-          
-          // 하단 타임라인 리스트 리로드
           setTimeout(loadRecentTimeline, 1000);
         })
         .subscribe();
@@ -490,16 +482,11 @@
       const randomName = mockNames[Math.floor(Math.random() * mockNames.length)];
       const randomRelation = mockRelations[Math.floor(Math.random() * mockRelations.length)];
       
-      console.log("테스트용 입장 시뮬레이션:", randomName, randomRelation);
-      
-      // 애니메이션 수동 실행
       triggerWelcomeAnimation(randomName, randomRelation);
 
-      // 하단 목록 모의 추가 (테스트용)
       const now = new Date();
       const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
       
-      // 안내 카드 지우기
       if (timelineContainer.innerText.includes("방문객을 대기하고 있습니다")) {
         timelineContainer.innerHTML = "";
       }
@@ -511,10 +498,8 @@
         <span class="timeline-name">${randomName} 님</span>
         <span class="timeline-time">${timeStr}</span>
       `;
-      // 맨 앞에 배치
       timelineContainer.insertBefore(card, timelineContainer.firstChild);
 
-      // 10명 넘어가면 뒤에 것 삭제
       if (timelineContainer.children.length > 10) {
         timelineContainer.removeChild(timelineContainer.lastChild);
       }

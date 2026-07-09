@@ -4,12 +4,11 @@
    - 개인정보 암호화 저장 (RULE 7 준수)
    - Supabase 클라우드 데이터베이스 연동 기능 탑재
    - 실시간 하객 맞이 웰컴 보드 & QR 체크인 추적 기능 포함
+   - (테이블 충돌 방지: wedding_guestbook, wedding_visitor_logs 사용)
    ========================================================================== */
 
 /* ==========================================================================
    [A. 기본 설정값 (Default Config)]
-   ─ 사용자가 아무것도 저장하지 않았을 때 화면에 보일 기본 데이터입니다.
-   ─ 나중에 설정 패널에서 수정하면 Supabase 및 LocalStorage에 저장되어 이 값을 덮어씁니다.
    ========================================================================== */
 const DEFAULT_CONFIG = {
   groomName:         "박준서",
@@ -30,7 +29,7 @@ const DEFAULT_CONFIG = {
   brideAccount1:     "우리은행 1002-123-456789",
   brideAccount2:     "농협은행 302-1234-5678-90",
 
-  weddingDateTime:     "2026-10-24T13:00",   // datetime-local 형식 (타이머와 연동)
+  weddingDateTime:     "2026-10-24T13:00",
   weddingDateText:     "2026. 10. 24 SAT PM 01:00",
   weddingFullDateText: "2026년 10월 24일 (토) 오후 1:00",
 
@@ -47,16 +46,14 @@ const DEFAULT_CONFIG = {
   carInfo:      "네비게이션 '그랜드 웨딩홀 강남점' 검색",
   parkingInfo:  "지하 1층~3층 무료 주차 (하객 2시간 무료)",
 
-  adminPassword: "1234"   // 관리자 설정 패널 잠금 비밀번호 (기본값)
+  adminPassword: "1234"
 };
 
 /* ==========================================================================
    [B. 보안 암호화/복호화 (Security Encryption & Decryption)]
-   ─ RULE 7 준수: 모든 개인정보를 XOR + Base64 방식으로 암호화합니다.
    ========================================================================== */
-const SECURITY_KEY = 77; // 암호화에 사용할 비밀 숫자 키
+const SECURITY_KEY = 77;
 
-/** 텍스트를 암호화하여 알아볼 수 없는 문자열로 변환하는 함수입니다. */
 function encryptData(text) {
   if (!text) return "";
   const utf8String = unescape(encodeURIComponent(text));
@@ -67,7 +64,6 @@ function encryptData(text) {
   return btoa(codes.join(','));
 }
 
-/** 암호화된 문자열을 원래 텍스트로 복원하는 함수입니다. */
 function decryptData(encryptedText) {
   if (!encryptedText) return "";
   try {
@@ -84,7 +80,7 @@ function decryptData(encryptedText) {
 }
 
 /* ==========================================================================
-   [C. Supabase 클라이언트 초기화 및 오프라인 대비 분기]
+   [C. Supabase 클라이언트 초기화]
    ========================================================================== */
 let supabaseClient = null;
 let isSupabaseActive = false;
@@ -102,20 +98,16 @@ if (
     isSupabaseActive = true;
     console.log("Supabase 클라우드 데이터베이스에 연동되었습니다. 실시간 동기화 활성화.");
   } catch (e) {
-    console.error("Supabase 초기화 중 에러가 발생하여 로컬 단독 모드로 작동합니다:", e);
+    console.error("Supabase 초기화 에러:", e);
   }
-} else {
-  console.log("Supabase 설정값이 유효하지 않아 브라우저 로컬 저장소(LocalStorage) 모드로 실행합니다.");
 }
 
 /* ==========================================================================
    [D. 설정 로드/저장 (Config Load & Save)]
-   ─ Supabase 우선으로 청첩장 정보를 불러오며, 실패할 경우 LocalStorage로 대체합니다.
    ========================================================================== */
 const CONFIG_STORAGE_KEY = "wedding_custom_config";
 let currentConfig = { ...DEFAULT_CONFIG };
 
-/** 설정을 불러옵니다. */
 async function loadWeddingConfig() {
   if (isSupabaseActive) {
     try {
@@ -135,7 +127,7 @@ async function loadWeddingConfig() {
         return;
       }
     } catch (e) {
-      console.warn("Supabase 설정 로드 실패. LocalStorage 백업 데이터를 조회합니다:", e);
+      console.warn("Supabase 설정 로드 실패, LocalStorage로 구동:", e);
     }
   }
 
@@ -152,7 +144,6 @@ async function loadWeddingConfig() {
   applyConfigToPage(currentConfig);
 }
 
-/** 설정을 저장합니다. */
 async function saveWeddingConfig(configObj) {
   const jsonStr = JSON.stringify(configObj);
   const encrypted = encryptData(jsonStr);
@@ -165,13 +156,11 @@ async function saveWeddingConfig(configObj) {
         .upsert({ id: 1, config_data: encrypted, updated_at: new Date().toISOString() });
 
       if (error) throw error;
-      console.log("Supabase 클라우드에 설정 저장을 완료했습니다.");
     } catch (e) {
-      console.error("Supabase 설정 저장 중 에러가 발생하여 로컬에만 저장되었습니다:", e);
-      showToast("⚠️ 클라우드 저장 실패, 로컬에 저장되었습니다.");
+      console.error("Supabase 설정 저장 실패:", e);
+      showToast("⚠️ 설정이 로컬에만 보관되었습니다.");
     }
   }
-  
   applyConfigToPage(configObj);
 }
 
@@ -207,7 +196,7 @@ function applyConfigToPage(config) {
 loadWeddingConfig();
 
 /* ==========================================================================
-   [F. D-Day 카운트다운 타이머 (Real-time Countdown)]
+   [F. D-Day 카운트다운 타이머]
    ========================================================================== */
 function updateCountdown() {
   const weddingDate = new Date(currentConfig.weddingDateTime);
@@ -242,7 +231,7 @@ updateCountdown();
 setInterval(updateCountdown, 1000);
 
 /* ==========================================================================
-   [G. 포토 갤러리 슬라이더 기능]
+   [G. 포토 갤러리 슬라이더]
    ========================================================================== */
 const sliderWrapper = document.getElementById("gallery-slider");
 const prevBtn       = document.getElementById("gallery-prev-btn");
@@ -314,6 +303,7 @@ function showToast(msg) {
 
 /* ==========================================================================
    [J. 개인정보 보호 방명록 시스템 (Secure Guestbook)]
+   ─ 테이블명을 'wedding_guestbook'으로 갱신 적용합니다.
    ========================================================================== */
 const GUESTBOOK_KEY          = "encrypted_guestbook_messages";
 const guestbookForm          = document.getElementById("guestbook-form");
@@ -332,7 +322,7 @@ async function loadGuestbook() {
   if (isSupabaseActive) {
     try {
       const { data, error } = await supabaseClient
-        .from("guestbook_messages")
+        .from("wedding_guestbook") // 테이블명 변경 적용
         .select("*")
         .order("created_at", { ascending: false })
         .limit(50);
@@ -412,12 +402,6 @@ async function loadGuestbook() {
   });
 }
 
-function showEmptyNotice() {
-  guestbookListContainer.innerHTML = "";
-  guestbookListContainer.appendChild(emptyNotice);
-  emptyNotice.style.display = "block";
-}
-
 guestbookForm.addEventListener("submit", async e => {
   e.preventDefault();
   const name     = guestNameInput.value.trim();
@@ -431,7 +415,7 @@ guestbookForm.addEventListener("submit", async e => {
   if (isSupabaseActive) {
     try {
       const { error } = await supabaseClient
-        .from("guestbook_messages")
+        .from("wedding_guestbook") // 테이블명 변경 적용
         .insert({ name, message: encryptedMessage, password_hash: encryptedPassword });
 
       if (error) throw error;
@@ -459,20 +443,6 @@ guestbookForm.addEventListener("submit", async e => {
   showToast("축하 메시지가 등록되었습니다! 🌸");
 });
 
-function openDeleteModal(id) {
-  messageIdToDelete = id;
-  deletePasswordInput.value = "";
-  deleteModal.classList.add("show");
-  deletePasswordInput.focus();
-}
-function closeDeleteModal() {
-  messageIdToDelete = null;
-  deletePasswordInput.value = "";
-  deleteModal.classList.remove("show");
-}
-btnCloseModal.addEventListener("click", closeDeleteModal);
-deleteModal.addEventListener("click", e => { if (e.target === deleteModal) closeDeleteModal(); });
-
 btnConfirmDelete.addEventListener("click", async () => {
   const entered = deletePasswordInput.value.trim();
   if (!entered) { alert("비밀번호를 입력해 주세요."); return; }
@@ -480,7 +450,7 @@ btnConfirmDelete.addEventListener("click", async () => {
   if (isSupabaseActive && typeof messageIdToDelete === "string") {
     try {
       const { data, error } = await supabaseClient
-        .from("guestbook_messages")
+        .from("wedding_guestbook") // 테이블명 변경 적용
         .select("password_hash")
         .eq("id", messageIdToDelete)
         .single();
@@ -489,7 +459,7 @@ btnConfirmDelete.addEventListener("click", async () => {
 
       if (data && decryptData(data.password_hash) === entered) {
         const { error: delError } = await supabaseClient
-          .from("guestbook_messages")
+          .from("wedding_guestbook") // 테이블명 변경 적용
           .delete()
           .eq("id", messageIdToDelete);
 
@@ -532,13 +502,10 @@ btnConfirmDelete.addEventListener("click", async () => {
   }
 });
 
-loadGuestbook();
-
 /* ==========================================================================
    [K. 실시간 하객 맞이 웰컴 보드 & QR 방문객 추적 로직 (Visitor Logs)]
+   ─ 테이블명을 'wedding_visitor_logs'로 갱신 적용합니다.
    ========================================================================== */
-
-// ─ 하객 방문객 관련 HTML 요소 참조
 const checkinModal        = document.getElementById("checkin-modal");
 const btnOpenCheckin      = document.getElementById("btn-open-checkin");
 const btnCloseCheckinModal = document.getElementById("btn-close-checkin-modal");
@@ -547,7 +514,6 @@ const checkinNameInput    = document.getElementById("checkin-name");
 const checkinSideSelect   = document.getElementById("checkin-side");
 const checkinRelationInput = document.getElementById("checkin-relation");
 
-// 1) 수동 도착 체크인 모달 제어
 if (btnOpenCheckin) {
   btnOpenCheckin.addEventListener("click", () => {
     checkinNameInput.value = "";
@@ -564,7 +530,6 @@ if (btnCloseCheckinModal) {
 }
 checkinModal.addEventListener("click", e => { if (e.target === checkinModal) closeCheckinModal(); });
 
-// 2) 하객 도착 등록 전송 이벤트
 if (btnSubmitCheckin) {
   btnSubmitCheckin.addEventListener("click", async () => {
     const nameStr = checkinNameInput.value.trim();
@@ -581,7 +546,7 @@ if (btnSubmitCheckin) {
     if (isSupabaseActive) {
       try {
         const { error } = await supabaseClient
-          .from("visitor_logs")
+          .from("wedding_visitor_logs") // 테이블명 변경 적용
           .insert({ guest_name: nameStr, relation: fullRelation });
 
         if (error) throw error;
@@ -594,42 +559,34 @@ if (btnSubmitCheckin) {
       }
     }
 
-    // Supabase 미작동 시 데모용 토스트 알림
     showToast(`체크인 완료: ${nameStr} 님 (${fullRelation})`);
     closeCheckinModal();
   });
 }
 
-// 3) 주소(URL) 파라미터를 통한 자동 방문객 체크인 기능
-// 하객이 ?guest=홍길동&relation=신랑친구 형태의 주소로 유입될 경우 자동 기록
 async function handleUrlGuestCheckin() {
   const urlParams = new URLSearchParams(window.location.search);
   const guestName = urlParams.get("guest");
   const relationVal = urlParams.get("relation") || "하객";
 
   if (guestName && isSupabaseActive) {
-    // 중복 전송 방지를 위해 세션 스토리지를 검증합니다 (새로고침 시 재전송 방지)
     const sessionKey = `visitor_checked_${guestName}`;
     if (!sessionStorage.getItem(sessionKey)) {
       try {
         const { error } = await supabaseClient
-          .from("visitor_logs")
+          .from("wedding_visitor_logs") // 테이블명 변경 적용
           .insert({ guest_name: guestName, relation: relationVal });
         
         if (error) throw error;
         sessionStorage.setItem(sessionKey, "true");
-        console.log(`자동 체크인 완료: ${guestName} 님 (${relationVal})`);
-        
-        // 하객 환영 팝업 띄우기
         showToast(`🌸 ${guestName} 님, 청첩장 방문을 환영합니다! 🌸`);
       } catch (e) {
-        console.error("자동 체크인 중 에러 발생:", e);
+        console.error("자동 체크인 에러:", e);
       }
     }
   }
 }
 
-// 최초 로드 시 실행
 handleUrlGuestCheckin();
 
 /* ==========================================================================
@@ -645,7 +602,6 @@ const btnCopyGeneratedLink = document.getElementById("btn-copy-generated-link");
 const adminVisitorList    = document.getElementById("admin-visitor-list");
 const btnClearVisitors    = document.getElementById("btn-clear-visitors");
 
-// 1) 관리자 하객 개별 QR 코드 생성
 if (btnGenerateGuestQr) {
   btnGenerateGuestQr.addEventListener("click", () => {
     const name = adminGuestName.value.trim();
@@ -656,17 +612,12 @@ if (btnGenerateGuestQr) {
       return;
     }
 
-    // 현재 도메인 주소에 파라미터 구성
     const baseUri = window.location.origin + window.location.pathname;
     const finalUrl = `${baseUri}?guest=${encodeURIComponent(name)}&relation=${encodeURIComponent(relation)}`;
-
-    // 구글 차트 QR API를 사용해 200x200 크기 이미지 생성
     const qrApiUrl = `https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${encodeURIComponent(finalUrl)}`;
 
     generatedQrContainer.innerHTML = `<img src="${qrApiUrl}" alt="하객 전용 QR" style="border: 4px solid white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">`;
     generatedLinkText.innerText = finalUrl;
-    
-    // 복사 버튼 세팅
     btnCopyGeneratedLink.setAttribute("data-copy-target", finalUrl);
     
     qrResultBox.style.display = "block";
@@ -685,13 +636,12 @@ if (btnCopyGeneratedLink) {
   });
 }
 
-// 2) 관리자용 실시간 하객 명단 업데이트 함수
 async function loadAdminVisitorList() {
   if (!isSupabaseActive || !adminVisitorList) return;
 
   try {
     const { data, error } = await supabaseClient
-      .from("visitor_logs")
+      .from("wedding_visitor_logs") // 테이블명 변경 적용
       .select("*")
       .order("visited_at", { ascending: false })
       .limit(15);
@@ -724,16 +674,15 @@ async function loadAdminVisitorList() {
   }
 }
 
-// 3) 관리자용 하객 전체 초기화 기능
 if (btnClearVisitors) {
   btnClearVisitors.addEventListener("click", async () => {
     const confirmed = confirm("모든 하객 방문자 기록을 데이터베이스에서 완전히 삭제(초기화)하시겠습니까?");
     if (confirmed && isSupabaseActive) {
       try {
         const { error } = await supabaseClient
-          .from("visitor_logs")
+          .from("wedding_visitor_logs") // 테이블명 변경 적용
           .delete()
-          .neq("guest_name", ""); // 전체 행 삭제
+          .neq("guest_name", "");
 
         if (error) throw error;
 
@@ -748,22 +697,20 @@ if (btnClearVisitors) {
 
 /* ==========================================================================
    [M. Supabase Realtime 기능 활성화 (실시간 데이터 구독)]
+   ─ 테이블명을 wedding_guestbook, wedding_visitor_logs 로 갱신 적용합니다.
    ========================================================================== */
 if (isSupabaseActive) {
-  // 1. 방명록 실시간 동기화
   supabaseClient
-    .channel("public:guestbook_messages")
-    .on("postgres_changes", { event: "*", schema: "public", table: "guestbook_messages" }, payload => {
-      console.log("방명록 DB에 변경이 생겼습니다. 새로 로딩합니다.");
+    .channel("public:wedding_guestbook") // 채널명 변경
+    .on("postgres_changes", { event: "*", schema: "public", table: "wedding_guestbook" }, payload => {
+      console.log("방명록 DB 변경 감지됨.");
       loadGuestbook();
     })
     .subscribe();
 
-  // 2. 관리자 설정 정보 실시간 동기화
   supabaseClient
     .channel("public:wedding_config")
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "wedding_config" }, payload => {
-      console.log("청첩장 설정이 실시간으로 수정되었습니다. 화면에 반영합니다.");
       if (payload.new && payload.new.config_data) {
         const decrypted = decryptData(payload.new.config_data);
         const parsed = JSON.parse(decrypted);
@@ -773,11 +720,9 @@ if (isSupabaseActive) {
     })
     .subscribe();
 
-  // 3. 하객 방문자 실시간 동기화 (관리자 대시보드 갱신)
   supabaseClient
-    .channel("public:visitor_logs")
-    .on("postgres_changes", { event: "*", schema: "public", table: "visitor_logs" }, payload => {
-      console.log("하객 방문 DB 변경 감지됨. 명단을 업데이트합니다.");
+    .channel("public:wedding_visitor_logs") // 채널명 변경
+    .on("postgres_changes", { event: "*", schema: "public", table: "wedding_visitor_logs" }, payload => {
       loadAdminVisitorList();
     })
     .subscribe();
@@ -810,7 +755,6 @@ const btnCloseSettings = document.getElementById("btn-close-settings");
 const btnSaveSettings  = document.getElementById("btn-save-settings");
 const btnResetSettings = document.getElementById("btn-reset-settings");
 
-// 설정 확인 모달
 fabBtn.addEventListener("click", () => {
   adminPwInput.value = "";
   adminPwModal.classList.add("show");
@@ -840,7 +784,7 @@ btnConfirmAdminPw.addEventListener("click", () => {
     fabBtn.classList.add("active");
 
     populateSettingsPanel(currentConfig);
-    loadAdminVisitorList(); // 방문객 목록 조회 구동
+    loadAdminVisitorList();
     settingsPanel.classList.add("show");
   } else {
     adminPwInput.value = "";
@@ -898,7 +842,7 @@ btnResetSettings.addEventListener("click", () => {
       supabaseClient.from("wedding_config").delete().eq("id", 1).then(() => {
         console.log("Supabase 설정 데이터 삭제.");
       });
-      supabaseClient.from("visitor_logs").delete().neq("guest_name", "").then(() => {
+      supabaseClient.from("wedding_visitor_logs").delete().neq("guest_name", "").then(() => {
         console.log("Supabase 하객 로그 삭제.");
       });
     }
