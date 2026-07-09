@@ -1,0 +1,6 @@
+# .gitignore
+# 청첩장 wedding 폴더 전용 깃 제외 설정 파일입니다.
+
+Thumbs.db
+.DS_Store
+*.log

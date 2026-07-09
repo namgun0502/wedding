@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>박준서 & 이서연의 모바일 청첩장</title>
+  <meta name="description" content="저희 두 사람이 사랑과 신뢰로 한 가정을 이루고자 합니다. 귀한 걸음 하시어 축복해 주시면 감사하겠습니다.">
+  <meta property="og:title" content="박준서 & 이서연 결혼합니다">
+  <meta property="og:description" content="2026년 10월 24일 토요일 오후 1시, 그랜드 웨딩홀 그랜드볼룸">
+  <meta property="og:image" content="wedding_main.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="wedding-container">
+
+    <!-- ==================== 1. 메인 커버 섹션 ==================== -->
+    <header class="wedding-header fade-in">
+      <div class="header-top-text">BEAUTIFUL DAY</div>
+      <div class="main-image-container">
+        <img src="wedding_main.png" alt="결혼식 일러스트" class="main-image" id="main-invitation-image">
+      </div>
+      <div class="header-names">
+        <!-- data-config 속성 → 앱이 켜질 때 저장된 설정값을 자동으로 불러와 채워주는 역할을 합니다 -->
+        <span class="groom-name" data-config="groomName">박준서</span>
+        <span class="and-symbol">&amp;</span>
+        <span class="bride-name" data-config="brideName">이서연</span>
+      </div>
+      <div class="header-info">
+        <p class="wedding-date-text" data-config="weddingDateText">2026. 10. 24 SAT PM 01:00</p>
+        <p class="wedding-place-text" data-config="hallName">그랜드 웨딩홀 그랜드볼룸</p>
+      </div>
+    </header>
+
+    <!-- ==================== 2. 초대 및 인사글 섹션 ==================== -->
+    <section class="section greeting-section fade-in">
+      <span class="section-subtitle">INVITATION</span>
+      <h2 class="section-title">소중한 분들을 초대합니다</h2>
+      <div class="greeting-message">
+        <p>서로가 마주 보며 걸어온 길을</p>
+        <p>이제는 한곳을 바라보며</p>
+        <p>함께 나란히 걸어가고자 합니다.</p>
+        <p class="spacer"></p>
+        <p>함께하는 약속의 첫걸음,</p>
+        <p>가까이서 축복해 주시고 지켜봐 주시면</p>
+        <p>더없는 기쁨과 격려가 되겠습니다.</p>
+      </div>
+      <div class="family-contacts">
+        <div class="family-member">
+          <p class="relation-row">
+            <span class="parents-names" data-config="groomParentsNames">박민우 · 최지영</span>
+            <span class="relation-text">의</span>
+            <span data-config="groomRelation">차남</span>
+            <strong class="person-name" data-config="groomFirstName">준서</strong>
+          </p>
+          <div class="contact-buttons">
+            <a href="tel:01012345678" class="btn-contact call" id="btn-call-groom" data-config-href="groomPhone" data-config-href-prefix="tel:">
+              <i class="fa-solid fa-phone"></i>
+            </a>
+            <a href="sms:01012345678" class="btn-contact sms" id="btn-sms-groom" data-config-href="groomPhone" data-config-href-prefix="sms:">
+              <i class="fa-solid fa-envelope"></i>
+            </a>
+          </div>
+        </div>
+        <div class="family-member">
+          <p class="relation-row">
+            <span class="parents-names" data-config="brideParentsNames">이재현 · 정다은</span>
+            <span class="relation-text">의</span>
+            <span data-config="brideRelation">장녀</span>
+            <strong class="person-name" data-config="brideFirstName">서연</strong>
+          </p>
+          <div class="contact-buttons">
+            <a href="tel:01087654321" class="btn-contact call" id="btn-call-bride" data-config-href="bridePhone" data-config-href-prefix="tel:">
+              <i class="fa-solid fa-phone"></i>
+            </a>
+            <a href="sms:01087654321" class="btn-contact sms" id="btn-sms-bride" data-config-href="bridePhone" data-config-href-prefix="sms:">
+              <i class="fa-solid fa-envelope"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 3. 디데이 카운트다운 섹션 ==================== -->
+    <section class="section countdown-section fade-in">
+      <span class="section-subtitle">WEDDING DAY</span>
+      <h2 class="section-title">
+        <span data-config="groomFirstName">준서</span> &amp; <span data-config="brideFirstName">서연</span>의 예식일
+      </h2>
+      <p class="countdown-date" data-config="weddingFullDateText">2026년 10월 24일 (토) 오후 1:00</p>
+      <div class="timer-container" id="wedding-countdown-timer">
+        <div class="timer-box"><span class="time-number" id="days">00</span><span class="time-label">DAYS</span></div>
+        <div class="timer-box"><span class="time-number" id="hours">00</span><span class="time-label">HOURS</span></div>
+        <div class="timer-box"><span class="time-number" id="minutes">00</span><span class="time-label">MINS</span></div>
+        <div class="timer-box"><span class="time-number" id="seconds">00</span><span class="time-label">SECS</span></div>
+      </div>
+      <p class="dday-summary-text" id="dday-summary">결혼식이 진행 중이거나 준비 중입니다.</p>
+    </section>
+
+    <!-- ==================== 4. 포토 갤러리 섹션 ==================== -->
+    <section class="section gallery-section fade-in">
+      <span class="section-subtitle">GALLERY</span>
+      <h2 class="section-title">소중한 순간들</h2>
+      <div class="slider-container">
+        <div class="slider-wrapper" id="gallery-slider">
+          <div class="slide-item active"><img src="wedding_gallery1.png" alt="웨딩 화보 1" class="gallery-img"></div>
+          <div class="slide-item"><img src="wedding_gallery2.png" alt="웨딩 화보 2" class="gallery-img"></div>
+          <div class="slide-item"><img src="wedding_main.png" alt="웨딩 일러스트" class="gallery-img"></div>
+        </div>
+        <button class="slider-btn prev-btn" id="gallery-prev-btn" aria-label="이전 사진 보기"><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="slider-btn next-btn" id="gallery-next-btn" aria-label="다음 사진 보기"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+      <div class="slider-dots" id="gallery-dots">
+        <span class="dot active" data-index="0"></span>
+        <span class="dot" data-index="1"></span>
+        <span class="dot" data-index="2"></span>
+      </div>
+    </section>
+
+    <!-- ==================== 5. 오시는 길 섹션 ==================== -->
+    <section class="section location-section fade-in">
+      <span class="section-subtitle">LOCATION</span>
+      <h2 class="section-title">오시는 길</h2>
+      <div class="hall-info">
+        <h3 class="hall-name" data-config="hallFullName">그랜드 웨딩홀 3층 그랜드볼룸</h3>
+        <p class="hall-address" data-config="hallAddress">서울특별시 강남구 테헤란로 123 (역삼동)</p>
+        <p class="hall-phone" data-config="hallPhone">TEL. 02-1234-5678</p>
+      </div>
+      <div class="map-placeholder">
+        <div class="map-icon-box"><i class="fa-solid fa-map-location-dot"></i></div>
+        <p class="map-desc-text">안전하고 정밀한 길찾기를 위해 아래 지도 링크를 이용해 주세요.</p>
+      </div>
+      <div class="map-buttons">
+        <a href="https://map.naver.com/v5/search/%ED%85%8C%ED%97%A4%EB%9E%80%EB%A1%9C%20123" target="_blank" rel="noopener noreferrer" class="map-link naver" id="link-naver-map">네이버 지도</a>
+        <a href="https://map.kakao.com/link/search/%ED%85%8C%ED%97%A4%EB%9E%80%EB%A1%9C%20123" target="_blank" rel="noopener noreferrer" class="map-link kakao" id="link-kakao-map">카카오맵</a>
+      </div>
+      <div class="transportation-guide">
+        <div class="transport-item">
+          <h4><i class="fa-solid fa-subway"></i> 지하철</h4>
+          <!-- data-config 속성: 설정 패널에서 저장한 값이 자동으로 이 자리에 채워집니다 -->
+          <p data-config="subwayInfo1">2호선 역삼역 1번 출구 도보 3분</p>
+          <p data-config="subwayInfo2">2호선/신분당선 강남역 12번 출구 도보 8분</p>
+        </div>
+        <div class="transport-item">
+          <h4><i class="fa-solid fa-bus"></i> 버스</h4>
+          <p data-config="busStop">강남역·역삼역 정류장 하차</p>
+          <p data-config="busLines">간선(파랑): 146, 341, 360, 740 / 지선(초록): 4434, 8441</p>
+        </div>
+        <div class="transport-item">
+          <h4><i class="fa-solid fa-car"></i> 자가용 및 주차</h4>
+          <p data-config="carInfo">네비게이션 '그랜드 웨딩홀 강남점' 검색</p>
+          <p data-config="parkingInfo">지하 1층~3층 무료 주차 (하객 2시간 무료)</p>
+        </div>
+      </div>
+      
+      <!-- [현장 도착 체크인 배너] -->
+      <!-- 하객이 실제 식장에 도착했을 때 전광판에 본인 이름을 띄울 수 있도록 유도합니다 -->
+      <div class="checkin-banner fade-in">
+        <div class="checkin-banner-icon"><i class="fa-solid fa-square-check"></i></div>
+        <h3>식장에 도착하셨나요?</h3>
+        <p>식장 웰컴 스크린에 환영 메시지를 띄워 보세요!</p>
+        <button class="btn-open-checkin" id="btn-open-checkin">도착 체크인 하기</button>
+      </div>
+    </section>
+
+    <!-- ==================== 6. 보안 방명록 섹션 ==================== -->
+    <section class="section guestbook-section fade-in">
+      <span class="section-subtitle">GUESTBOOK</span>
+      <h2 class="section-title">축하의 한마디</h2>
+      <p class="section-desc">신랑 신부의 앞날을 축복하는 글을 남겨주세요.</p>
+      <form id="guestbook-form" class="guestbook-form">
+        <div class="input-row">
+          <div class="input-group">
+            <label for="guest-name">이름</label>
+            <input type="text" id="guest-name" placeholder="이름을 입력하세요" required maxlength="10">
+          </div>
+          <div class="input-group">
+            <label for="guest-password">비밀번호</label>
+            <input type="password" id="guest-password" placeholder="비밀번호(4자리)" required maxlength="4" pattern="[0-9]*" inputmode="numeric">
+          </div>
+        </div>
+        <div class="input-group text-group">
+          <label for="guest-message">메시지</label>
+          <textarea id="guest-message" placeholder="축하하는 마음을 담은 따뜻한 글을 적어주세요." required maxlength="200"></textarea>
+        </div>
+        <button type="submit" class="btn-submit" id="btn-submit-guestbook">메시지 등록하기</button>
+      </form>
+      <div class="guestbook-list" id="guestbook-list-container">
+        <div class="empty-guestbook" id="empty-guestbook-notice">첫 번째 축하글의 주인공이 되어주세요.</div>
+      </div>
+    </section>
+
+    <!-- ==================== 7. 마음 전하실 곳 섹션 ==================== -->
+    <section class="section gift-section fade-in">
+      <span class="section-subtitle">GIFT</span>
+      <h2 class="section-title">마음 전하실 곳</h2>
+      <p class="section-desc">축하해 주시는 따뜻한 마음을 감사히 받겠습니다.</p>
+      <div class="accordion-container">
+        <div class="accordion-item" id="groom-accordion">
+          <button class="accordion-header" id="btn-accordion-groom">
+            <span>신랑측 계좌번호 보기</span>
+            <i class="fa-solid fa-chevron-down arrow-icon"></i>
+          </button>
+          <div class="accordion-content">
+            <div class="account-row">
+              <div class="account-info">
+                <span class="account-owner">신랑 <span data-config="groomName">박준서</span></span>
+                <span class="account-number" data-config="groomAccount1">신한은행 110-123-456789</span>
+              </div>
+              <button class="btn-copy" id="btn-copy-groom1" data-config="groomAccount1" data-account="신한은행 110-123-456789">복사</button>
+            </div>
+            <div class="account-row">
+              <div class="account-info">
+                <span class="account-owner">혼주 <span data-config="groomFatherName">박민우</span> (부)</span>
+                <span class="account-number" data-config="groomAccount2">국민은행 123456-02-789012</span>
+              </div>
+              <button class="btn-copy" id="btn-copy-groom2" data-config="groomAccount2" data-account="국민은행 123456-02-789012">복사</button>
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item" id="bride-accordion">
+          <button class="accordion-header" id="btn-accordion-bride">
+            <span>신부측 계좌번호 보기</span>
+            <i class="fa-solid fa-chevron-down arrow-icon"></i>
+          </button>
+          <div class="accordion-content">
+            <div class="account-row">
+              <div class="account-info">
+                <span class="account-owner">신부 <span data-config="brideName">이서연</span></span>
+                <span class="account-number" data-config="brideAccount1">우리은행 1002-123-456789</span>
+              </div>
+              <button class="btn-copy" id="btn-copy-bride1" data-config="brideAccount1" data-account="우리은행 1002-123-456789">복사</button>
+            </div>
+            <div class="account-row">
+              <div class="account-info">
+                <span class="account-owner">혼주 <span data-config="brideFatherName">이재현</span> (부)</span>
+                <span class="account-number" data-config="brideAccount2">농협은행 302-1234-5678-90</span>
+              </div>
+              <button class="btn-copy" id="btn-copy-bride2" data-config="brideAccount2" data-account="농협은행 302-1234-5678-90">복사</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 8. 푸터 ==================== -->
+    <footer class="wedding-footer">
+      <p class="thanks-text">감사합니다.</p>
+      <p class="copyright-text">
+        &copy; 2026 <span data-config="groomName">박준서</span> &amp; <span data-config="brideName">이서연</span> 모바일 청첩장.
+      </p>
+    </footer>
+
+  </div><!-- /wedding-container -->
+
+  <!-- ===================================================== -->
+  <!-- 토스트 알림창 (계좌복사, 설정저장 등 완료 시 팝업)    -->
+  <!-- ===================================================== -->
+  <div class="toast-message" id="toast-alert" aria-live="polite">계좌번호가 복사되었습니다.</div>
+
+  <!-- ===================================================== -->
+  <!-- 방명록 삭제 확인 모달                                  -->
+  <!-- ===================================================== -->
+  <div class="modal-overlay" id="delete-modal">
+    <div class="modal-content">
+      <h3>메시지 삭제</h3>
+      <p>글을 작성할 때 설정하신 비밀번호 4자리를 입력해 주세요.</p>
+      <input type="password" id="delete-password-input" placeholder="비밀번호" maxlength="4" pattern="[0-9]*" inputmode="numeric">
+      <div class="modal-buttons">
+        <button class="btn-modal btn-cancel" id="btn-close-modal">취소</button>
+        <button class="btn-modal btn-confirm-delete" id="btn-confirm-delete-message">삭제하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- ⚙️ 관리자 설정 버튼 (화면 우측 하단에 고정 표시)     -->
+  <!-- 하객들이 의도치 않게 수정하지 못하도록 비밀번호로 보호 -->
+  <!-- ===================================================== -->
+  <button class="fab-settings-btn" id="fab-settings-btn" title="청첩장 정보 관리자 설정">
+    <i class="fa-solid fa-gear"></i>
+  </button>
+
+  <!-- ===================================================== -->
+  <!-- 관리자 비밀번호 확인 모달                             -->
+  <!-- ===================================================== -->
+  <div class="modal-overlay" id="admin-password-modal">
+    <div class="modal-content admin-pw-content">
+      <div class="admin-pw-icon"><i class="fa-solid fa-lock"></i></div>
+      <h3>관리자 확인</h3>
+      <p>청첩장 편집 기능은 관리자 전용입니다.<br>비밀번호 4자리를 입력하세요.</p>
+      <input type="password" id="admin-password-input" placeholder="비밀번호 입력 (기본값: 1234)" maxlength="4" pattern="[0-9]*" inputmode="numeric">
+      <div class="modal-buttons">
+        <button class="btn-modal btn-cancel" id="btn-close-admin-modal">취소</button>
+        <button class="btn-modal btn-confirm-delete" id="btn-confirm-admin-password">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- 실시간 청첩장 설정 편집 패널 (전체화면 슬라이드 업)  -->
+  <!-- 관리자 비밀번호 통과 후에만 열립니다                  -->
+  <!-- ===================================================== -->
+  <div class="settings-panel-overlay" id="settings-panel">
+    <div class="settings-panel-inner">
+
+      <!-- 패널 헤더 -->
+      <div class="settings-header">
+        <h2 class="settings-title"><i class="fa-solid fa-pen-to-square"></i> 청첩장 정보 수정</h2>
+        <button class="btn-close-settings" id="btn-close-settings" aria-label="설정 닫기">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="settings-body">
+
+        <!-- [신랑측 정보] -->
+        <div class="settings-group">
+          <h3 class="settings-group-title">💍 신랑측 정보</h3>
+          <div class="settings-field">
+            <label for="cfg-groomName">신랑 전체 이름</label>
+            <input type="text" id="cfg-groomName" data-cfg-key="groomName" placeholder="예: 박준서" maxlength="10">
+          </div>
+          <div class="settings-field">
+            <label for="cfg-groomFirstName">신랑 이름(호칭, 2자리)</label>
+            <input type="text" id="cfg-groomFirstName" data-cfg-key="groomFirstName" placeholder="예: 준서" maxlength="5">
+          </div>
+          <div class="settings-field">
+            <label for="cfg-groomParentsNames">신랑 부모님 성함</label>
+            <input type="text" id="cfg-groomParentsNames" data-cfg-key="groomParentsNames" placeholder="예: 박민우 · 최지영" maxlength="20">
+          </div>
+          <div class="settings-field">
+            <label for="cfg-groomFatherName">신랑 아버지 성함</label>
+            <input type="text" id="cfg-groomFatherName" data-cfg-key="groomFatherName" placeholder="예: 박민우" maxlength="10">
+          </div>
+          <div class="settings-field">
+            <label for="cfg-groomRelation">신랑 관계 (차남/장남)</label>
+            <input type="text" id="cfg-groomRelation" data-cfg-key="groomRelation" placeholder="예: 차남" maxlength="5">
+          </div>
+          <div class="settings-field">
+            <label for="cfg-groomPhone">신랑 전화번호</label>
+            <input type="tel" id="cfg-groomPhone" data-cfg-key="groomPhone" placeholder="예: 01012345678" maxlength="15">
+          </div>
+          <div class="settings-field">
+            <label for="cfg-groomAccount1">신랑 본인 계좌번호</label>
+            <input type="text" id="cfg-groomAccount1" data-cfg-key="groomAccount1" placeholder="예: 신한은행 110-123-456789" maxlength="40">
+          </div>
+          <div class="settings-field">
+            <label for="cfg-groomAccount2">신랑 아버지 계좌번호</label>
+            <input type="text" id="cfg-groomAccount2" data-cfg-key="groomAccount2" placeholder="예: 국민은행 123456-02-789012" maxlength="40">
+          </div>
+        </div>
+
+        <!-- [신부측 정보] -->
+        <div class="settings-group">
+          <h3 class="settings-group-title">💐 신부측 정보</h3>
+          <div class="settings-field">
+            <label for="cfg-brideName">신부 전체 이름</label>
+            <input type="text" id="cfg-brideName" data-cfg-key="brideName" placeholder="예: 이서연" maxlength="10">
+          </div>
+          <div class="settings-field">
+            <label for="cfg-brideFirstName">신부 이름(호칭, 2자리)</label>
+            <input type="text" id="cfg-brideFirstName" data-cfg-key="brideFirstName" placeholder="예: 서연" maxlength="5">
+          </div>
+          <div class="settings-field">
+            <label for="cfg-brideParentsNames">신부 부모님 성함</label>
+            <input type="text" id="cfg-brideParentsNames" data-cfg-key="brideParentsNames" placeholder="예: 이재현 · 정다은" maxlength="20">
+          </div>
+          <div class="settings-field">
+            <label for="cfg-brideFatherName">신부 아버지 성함</label>
+            <input type="text" id="cfg-brideFatherName" data-cfg-key="brideFatherName" placeholder="예: 이재현" maxlength="10">
+          </div>
+          <div class="settings-field">
+            <label for="cfg-brideRelation">신부 관계 (장녀/차녀)</label>
+            <input type="text" id="cfg-brideRelation" data-cfg-key="brideRelation" placeholder="예: 장녀" maxlength="5">
+          </div>
+          <div class="settings-field">
+            <label for="cfg-bridePhone">신부 전화번호</label>
+            <input type="tel" id="cfg-bridePhone" data-cfg-key="bridePhone" placeholder="예: 01087654321" maxlength="15">
+          </div>
+          <div class="settings-field">
+            <label for="cfg-brideAccount1">신부 본인 계좌번호</label>
+            <input type="text" id="cfg-brideAccount1" data-cfg-key="brideAccount1" placeholder="예: 우리은행 1002-123-456789" maxlength="40">
+          </div>
+          <div class="settings-field">
+            <label for="cfg-brideAccount2">신부 아버지 계좌번호</label>
+            <input type="text" id="cfg-brideAccount2" data-cfg-key="brideAccount2" placeholder="예: 농협은행 302-1234-5678-90" maxlength="40">
+          </div>
+        </div>
+
+        <!-- [예식 정보] -->
+        <div class="settings-group">
+          <h3 class="settings-group-title">📅 예식 정보</h3>
+          <!-- 날짜/시간은 datetime-local 타입으로 받아 D-Day 타이머와 연동합니다 -->
+          <div class="settings-field">
+            <label for="cfg-weddingDateTime">예식 날짜 및 시간</label>
+            <input type="datetime-local" id="cfg-weddingDateTime" data-cfg-key="weddingDateTime">
+            <span class="field-hint">※ 이 값을 바꾸면 D-Day 타이머가 즉시 업데이트됩니다.</span>
+          </div>
+          <div class="settings-field">
+            <label for="cfg-weddingDateText">메인 화면 날짜 표시 텍스트</label>
+            <input type="text" id="cfg-weddingDateText" data-cfg-key="weddingDateText" placeholder="예: 2026. 10. 24 SAT PM 01:00" maxlength="30">
+          </div>
+          <div class="settings-field">
+            <label for="cfg-weddingFullDateText">카운트다운 아래 날짜 텍스트</label>
+            <input type="text" id="cfg-weddingFullDateText" data-cfg-key="weddingFullDateText" placeholder="예: 2026년 10월 24일 (토) 오후 1:00" maxlength="40">
+          </div>
+        </div>
+
+        <!-- [예식장 정보] -->
+        <div class="settings-group">
+          <h3 class="settings-group-title">📍 예식장 정보</h3>
+          <div class="settings-field">
+            <label for="cfg-hallName">예식장 짧은 이름 (메인 화면)</label>
+            <input type="text" id="cfg-hallName" data-cfg-key="hallName" placeholder="예: 그랜드 웨딩홀 그랜드볼룸" maxlength="30">
+          </div>
+          <div class="settings-field">
+            <label for="cfg-hallFullName">예식장 전체 이름 (오시는 길)</label>
+            <input type="text" id="cfg-hallFullName" data-cfg-key="hallFullName" placeholder="예: 그랜드 웨딩홀 3층 그랜드볼룸" maxlength="40">
+          </div>
+          <div class="settings-field">
+            <label for="cfg-hallAddress">예식장 주소</label>
+            <input type="text" id="cfg-hallAddress" data-cfg-key="hallAddress" placeholder="예: 서울특별시 강남구 테헤란로 123" maxlength="60">
+          </div>
+          <div class="settings-field">
+            <label for="cfg-hallPhone">예식장 전화번호</label>
+            <input type="text" id="cfg-hallPhone" data-cfg-key="hallPhone" placeholder="예: TEL. 02-1234-5678" maxlength="25">
+          </div>
+        </div>
+
+        <!-- [대중교통 안내] -->
+        <div class="settings-group">
+          <h3 class="settings-group-title">🚇 대중교통 안내</h3>
+          <p class="transport-settings-desc">예식장이 바뀌면 이 칸들을 직접 수정해 주세요.</p>
+          <div class="settings-field">
+            <label for="cfg-subwayInfo1">지하철 안내 1번째 줄</label>
+            <input type="text" id="cfg-subwayInfo1" data-cfg-key="subwayInfo1" placeholder="예: 2호선 역삼역 1번 출구 도보 3분" maxlength="60">
+          </div>
+          <div class="settings-field">
+            <label for="cfg-subwayInfo2">지하철 안내 2번째 줄</label>
+            <input type="text" id="cfg-subwayInfo2" data-cfg-key="subwayInfo2" placeholder="예: 2호선/신분당선 강남역 12번 출구 도보 8분" maxlength="60">
+          </div>
+          <div class="settings-field">
+            <label for="cfg-busStop">버스 정류장 이름</label>
+            <input type="text" id="cfg-busStop" data-cfg-key="busStop" placeholder="예: 강남역·역삼역 정류장 하차" maxlength="50">
+          </div>
+          <div class="settings-field">
+            <label for="cfg-busLines">버스 노선 번호</label>
+            <input type="text" id="cfg-busLines" data-cfg-key="busLines" placeholder="예: 간선(파랑): 146, 341 / 지선(초록): 4434" maxlength="80">
+          </div>
+          <div class="settings-field">
+            <label for="cfg-carInfo">자가용 네비 안내</label>
+            <input type="text" id="cfg-carInfo" data-cfg-key="carInfo" placeholder="예: 네비게이션 '○○웨딩홀' 검색" maxlength="60">
+          </div>
+          <div class="settings-field">
+            <label for="cfg-parkingInfo">주차 안내</label>
+            <input type="text" id="cfg-parkingInfo" data-cfg-key="parkingInfo" placeholder="예: 지하 1~3층 무료 주차 2시간" maxlength="60">
+          </div>
+        </div>
+
+        <!-- [현장 웰컴 보드 & 하객 추적 관리] -->
+        <div class="settings-group">
+          <h3 class="settings-group-title">🏷️ 현장 웰컴 보드 & 하객 방문 추적</h3>
+          <p class="transport-settings-desc">예식장 전광판 및 모니터로 하객 입장을 실시간 관제할 수 있습니다.</p>
+          
+          <div class="settings-field">
+            <label>1. 예식장 모니터 웰컴 보드 연결 주소</label>
+            <a href="welcome.html" target="_blank" class="map-link naver" style="text-align: center; text-decoration: none; padding: 10px 0; margin-top: 5px;">
+              웰컴 보드 전광판 화면 열기 <i class="fa-solid fa-up-right-from-square"></i>
+            </a>
+            <span class="field-hint">※ 예식장 입구 모니터에 이 링크 화면을 전체화면으로 띄워 두세요.</span>
+          </div>
+
+          <div class="settings-field" style="margin-top: 15px;">
+            <label>2. 개별 하객용 입장 QR 및 링크 생성기</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="admin-guest-name-input" placeholder="하객 이름을 입력하세요 (예: 홍길동)" style="flex: 1;">
+              <select id="admin-guest-relation-select" style="padding: 10px; border-radius: 8px; background: var(--settings-input-bg); border: 1px solid var(--settings-border); color: #fff; font-family: inherit;">
+                <option value="신랑 친구">신랑 친구</option>
+                <option value="신부 친구">신부 친구</option>
+                <option value="신랑측 하객">신랑측 하객</option>
+                <option value="신부측 하객">신부측 하객</option>
+              </select>
+            </div>
+            <button class="btn-submit" id="btn-generate-guest-qr" style="margin-top: 8px; padding: 10px 0; font-size: 13px;">이 하객 전용 QR/링크 만들기</button>
+          </div>
+
+          <!-- QR 생성 결과 노출 영역 -->
+          <div id="qr-result-box" style="display: none; text-align: center; margin-top: 15px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; border: 1px dashed var(--settings-border);">
+            <div id="generated-qr-image-container" style="margin-bottom: 10px;"></div>
+            <p id="generated-link-text" class="field-hint" style="word-break: break-all; margin-bottom: 8px; color: #fff;"></p>
+            <button class="btn-copy" id="btn-copy-generated-link" style="padding: 8px 16px;">링크 복사</button>
+          </div>
+
+          <div class="settings-field" style="margin-top: 20px;">
+            <label>3. 실시간 도착 하객 명단 (최근 15명)</label>
+            <div id="admin-visitor-list" style="max-height: 180px; overflow-y: auto; background: var(--settings-input-bg); border: 1px solid var(--settings-border); border-radius: 8px; padding: 8px; margin-top: 5px;">
+              <p class="field-hint" style="text-align: center; padding: 20px 0;">도착한 하객이 아직 없습니다.</p>
+            </div>
+            <button class="btn-reset-settings" id="btn-clear-visitors" style="margin-top: 8px; padding: 6px 0; font-size: 11px; border-color: rgba(230,57,70,0.3); color: #888;">
+              <i class="fa-solid fa-trash-can"></i> 방문자 기록 전체 초기화
+            </button>
+          </div>
+        </div>
+
+        <!-- [관리자 비밀번호 변경] -->
+        <div class="settings-group">
+          <h3 class="settings-group-title">🔒 관리자 비밀번호 변경</h3>
+          <div class="settings-field">
+            <label for="cfg-adminPassword">새 비밀번호 (4자리 숫자)</label>
+            <input type="password" id="cfg-adminPassword" data-cfg-key="adminPassword" placeholder="변경할 비밀번호 (빈칸이면 유지)" maxlength="4" inputmode="numeric">
+            <span class="field-hint">※ 기본 비밀번호는 <strong>1234</strong> 입니다. 반드시 바꿔두세요!</span>
+          </div>
+        </div>
+
+      </div><!-- /settings-body -->
+
+      <!-- 저장 버튼 -->
+      <div class="settings-footer">
+        <button class="btn-save-settings" id="btn-save-settings">
+          <i class="fa-solid fa-floppy-disk"></i> 저장하고 적용하기
+        </button>
+        <button class="btn-reset-settings" id="btn-reset-settings">
+          <i class="fa-solid fa-rotate-left"></i> 초기화
+        </button>
+      </div>
+
+    </div><!-- /settings-panel-inner -->
+  </div><!-- /settings-panel-overlay -->
+
+  <!-- ===================================================== -->
+  <!-- [NEW] 하객용 현장 체크인 입력 모달창                  -->
+  <!-- 하객이 식장 입구에서 직접 정보를 등록할 수 있는 폼 모달 -->
+  <!-- ===================================================== -->
+  <div class="modal-overlay" id="checkin-modal">
+    <div class="modal-content" style="border-top: 4px solid var(--point-gold);">
+      <div class="admin-pw-icon" style="color: var(--point-gold);"><i class="fa-solid fa-building-circle-check"></i></div>
+      <h3>현장 도착 체크인</h3>
+      <p>식장 모니터(웰컴 보드)에 반가운 이름과<br>축하 메시지를 띄워 보세요!</p>
+      
+      <div class="guestbook-form" style="box-shadow: none; border: none; padding: 0; margin-bottom: 20px; background: transparent; text-align: left;">
+        <div class="input-group" style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 6px;">
+          <label for="checkin-name" style="font-size: 12px; color: var(--text-muted); font-weight: 700;">성함 (이름)</label>
+          <input type="text" id="checkin-name" placeholder="방문자 성함을 입력해 주세요" required maxlength="10" style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 13px; background-color: var(--bg-color); color: var(--text-dark);">
+        </div>
+        <div class="input-group" style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 6px;">
+          <label for="checkin-side" style="font-size: 12px; color: var(--text-muted); font-weight: 700;">구분</label>
+          <select id="checkin-side" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-color); font-family: inherit; font-size: 13px; color: var(--text-dark);">
+            <option value="groom">신랑측 하객</option>
+            <option value="bride">신부측 하객</option>
+          </select>
+        </div>
+        <div class="input-group" style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="checkin-relation" style="font-size: 12px; color: var(--text-muted); font-weight: 700;">관계</label>
+          <input type="text" id="checkin-relation" placeholder="예: 친구, 회사동료, 사촌 등" required maxlength="15" style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 13px; background-color: var(--bg-color); color: var(--text-dark);">
+        </div>
+      </div>
+
+      <div class="modal-buttons">
+        <button class="btn-modal btn-cancel" id="btn-close-checkin-modal">닫기</button>
+        <button class="btn-modal btn-submit" id="btn-submit-checkin" style="background-color: var(--point-gold); color: #fff; box-shadow: none; display: flex; align-items: center; justify-content: center;">입장 등록하기</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="supabase-config.js"></script>
+  <!-- Supabase JS SDK (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+</body>
+</html>

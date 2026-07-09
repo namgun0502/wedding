@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>실시간 하객 맞이 웰컴 보드 | Welcome Board</title>
+  
+  <!-- 우아하고 프리미엄 웨딩 톤에 맞는 명조 서체와 고운바탕 폰트 로드 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Playfair+Display:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- 꽃가루(Confetti) 특수효과 라이브러리 로드 -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
+  <!-- Supabase 클라이언트 SDK 로드 -->
+  <script src="supabase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    /* ==========================================
+       [웰컴보드 전용 프리미엄 다크/골드 스타일링]
+       ========================================== */
+    :root {
+      --bg-color: #120F0D;        /* 품격 있는 초콜릿 다크 블랙 배경 */
+      --text-gold: #D4A373;       /* 은은한 로즈 골드 */
+      --text-white: #FDFBF7;      /* 부드러운 웜 아이보리 화이트 */
+      --border-color: #3D3028;    /* 어두운 브라운 보더 */
+      --card-bg: rgba(37, 30, 26, 0.85); /* 반투명 카드 배경 */
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-white);
+      font-family: 'Gowun Batang', 'Nanum Myeongjo', Georgia, serif;
+      min-height: 100vh;
+      overflow: hidden; /* 스크롤 차단 (전광판 화면 고정) */
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 40px;
+      position: relative;
+    }
+
+    /* 배경 은은한 빛 효과 */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at 50% 30%, rgba(212, 163, 115, 0.12) 0%, transparent 60%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* 1. 상단 헤더 타이틀 */
+    header {
+      text-align: center;
+      z-index: 2;
+      margin-bottom: 20px;
+    }
+
+    .main-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      letter-spacing: 6px;
+      color: var(--text-gold);
+      margin-bottom: 8px;
+      font-weight: 300;
+    }
+
+    .subtitle {
+      font-size: 42px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--text-white);
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+    }
+
+    /* 2. 메인 컨텐츠 영역 (대형 알림판) */
+    .welcome-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      max-width: 1200px;
+      z-index: 2;
+      position: relative;
+    }
+
+    /* 대기 중 기본 카드 */
+    .standby-card {
+      text-align: center;
+      padding: 60px 80px;
+      border-radius: 24px;
+      border: 1px solid var(--border-color);
+      background-color: var(--card-bg);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 20px 80px rgba(0,0,0,0.5);
+      animation: pulse 3s infinite ease-in-out;
+      max-width: 800px;
+    }
+
+    .standby-card i {
+      font-size: 64px;
+      color: var(--text-gold);
+      margin-bottom: 24px;
+    }
+
+    .standby-card h3 {
+      font-size: 32px;
+      margin-bottom: 16px;
+      color: var(--text-white);
+    }
+
+    .standby-card p {
+      font-size: 18px;
+      color: #8E7C77;
+    }
+
+    /* 실시간 입장 하객 전광판 카드 (기본 숨김) */
+    .entry-card {
+      position: absolute;
+      opacity: 0;
+      transform: scale(0.8) translateY(100px);
+      transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      text-align: center;
+      padding: 80px 100px;
+      border-radius: 30px;
+      background: linear-gradient(135deg, rgba(37,30,26,0.95) 0%, rgba(22,17,14,0.95) 100%);
+      border: 2px solid var(--text-gold);
+      box-shadow: 0 30px 100px rgba(212, 163, 115, 0.25);
+      max-width: 900px;
+      width: 100%;
+      pointer-events: none;
+    }
+
+    .entry-card.show {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      pointer-events: auto;
+    }
+
+    .entry-relation {
+      display: inline-block;
+      padding: 8px 24px;
+      border-radius: 30px;
+      background-color: rgba(212, 163, 115, 0.15);
+      border: 1px solid var(--text-gold);
+      color: var(--text-gold);
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 30px;
+      letter-spacing: 1px;
+    }
+
+    .entry-name {
+      font-size: 64px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--text-white);
+      line-height: 1.2;
+    }
+
+    .entry-name span {
+      color: var(--text-gold);
+    }
+
+    .entry-msg {
+      font-size: 24px;
+      color: #D6CCC2;
+      line-height: 1.6;
+    }
+
+    /* 3. 하단 실시간 최근 방문자 슬라이드/목록 */
+    .footer-board {
+      width: 100%;
+      max-width: 1200px;
+      z-index: 2;
+      border-top: 1px solid var(--border-color);
+      padding-top: 24px;
+    }
+
+    .footer-board-title {
+      font-size: 16px;
+      color: #8E7C77;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .footer-board-title i {
+      color: #03C75A; /* 실시간 감지 그린 색상 */
+      animation: blink 1.5s infinite;
+    }
+
+    .timeline-container {
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .timeline-container::-webkit-scrollbar {
+      height: 4px;
+    }
+    .timeline-container::-webkit-scrollbar-thumb {
+      background-color: var(--border-color);
+      border-radius: 2px;
+    }
+
+    .timeline-card {
+      flex-shrink: 0;
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 16px 24px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: cardAppear 0.5s ease-out;
+    }
+
+    .timeline-badge {
+      background-color: rgba(212, 163, 115, 0.1);
+      border: 1px solid var(--border-color);
+      color: var(--text-gold);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .timeline-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-white);
+    }
+
+    .timeline-time {
+      font-size: 12px;
+      color: #6A5C58;
+    }
+
+    /* 4. 테스트/데모용 사이드 버튼 (Supabase 미연결 시 작동 확인용) */
+    .demo-btn {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background-color: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-color);
+      color: #555;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 11px;
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.3s;
+    }
+    .demo-btn:hover {
+      background-color: rgba(212, 163, 115, 0.1);
+      color: var(--text-gold);
+      border-color: var(--text-gold);
+    }
+
+    /* ==========================================
+       [애니메이션 키프레임 정의]
+       ========================================== */
+    @keyframes pulse {
+      0% { transform: scale(1); box-shadow: 0 20px 80px rgba(0,0,0,0.5); }
+      50% { transform: scale(1.02); box-shadow: 0 20px 90px rgba(212, 163, 115, 0.08); }
+      100% { transform: scale(1); box-shadow: 0 20px 80px rgba(0,0,0,0.5); }
+    }
+
+    @keyframes blink {
+      0% { opacity: 0.2; }
+      50% { opacity: 1; }
+      100% { opacity: 0.2; }
+    }
+
+    @keyframes cardAppear {
+      from { opacity: 0; transform: translateX(30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. 상단 타이틀 -->
+  <header>
+    <div class="main-title">WELCOME BOARD</div>
+    <div class="subtitle">소중한 발걸음 감사드립니다</div>
+  </header>
+
+  <!-- 2. 중앙 웰컴 전광판 -->
+  <div class="welcome-container">
+    
+    <!-- 대기 화면 카드 -->
+    <div class="standby-card" id="standby-card">
+      <i class="fa-solid fa-qrcode"></i>
+      <h3>실시간 입장 체크인 대기 중</h3>
+      <p>예식장 입구에 마련된 QR코드를 촬영하고 입장 등록을 완료해 주세요.</p>
+    </div>
+
+    <!-- 실시간 하객 등장 시 활성화되는 웰컴 카드 -->
+    <div class="entry-card" id="entry-card">
+      <div class="entry-relation" id="entry-relation">신랑 친구</div>
+      <div class="entry-name"><span id="entry-name">홍길동</span> 님</div>
+      <div class="entry-msg">결혼식장에 도착하셨습니다.<br>소중한 축하와 발걸음에 깊이 감사드립니다.</div>
+    </div>
+
+  </div>
+
+  <!-- 3. 하단 최근 입장 타임라인 리스트 -->
+  <div class="footer-board">
+    <div class="footer-board-title">
+      <i class="fa-solid fa-circle"></i> 실시간 하객 도착 타임라인 (최근 10명)
+    </div>
+    <div class="timeline-container" id="timeline-container">
+      <!-- 동적으로 하객 카드가 주입됩니다. -->
+      <div class="timeline-card" style="opacity: 0.5;">
+        <span class="timeline-badge">안내</span>
+        <span class="timeline-name">방문객을 대기하고 있습니다.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 테스트용 데모 버튼 -->
+  <button class="demo-btn" id="demo-btn">모의 테스트 체크인 실행</button>
+
+  <script>
+    /* ==========================================================================
+       [웰컴 보드 구동 스크립트]
+       ========================================================================== */
+    const standbyCard = document.getElementById("standby-card");
+    const entryCard = document.getElementById("entry-card");
+    const entryRelation = document.getElementById("entry-relation");
+    const entryName = document.getElementById("entry-name");
+    const timelineContainer = document.getElementById("timeline-container");
+    const demoBtn = document.getElementById("demo-btn");
+
+    let isSupabaseActive = false;
+    let supabaseClient = null;
+
+    // 1. Supabase 초기화 및 연동 점검
+    if (
+      typeof SUPABASE_CONFIG !== "undefined" &&
+      SUPABASE_CONFIG.SUPABASE_URL &&
+      SUPABASE_CONFIG.SUPABASE_ANON_KEY &&
+      SUPABASE_CONFIG.SUPABASE_URL !== "YOUR_SUPABASE_PROJECT_URL_HERE"
+    ) {
+      try {
+        const { createClient } = supabase;
+        supabaseClient = createClient(SUPABASE_CONFIG.SUPABASE_URL, SUPABASE_CONFIG.SUPABASE_ANON_KEY);
+        isSupabaseActive = true;
+        console.log("Supabase 연동 완료. 실시간 웰컴보드 활성화.");
+      } catch (e) {
+        console.error("Supabase 초기화 오류:", e);
+      }
+    }
+
+    // 2. 하객 입장 애니메이션 연출 함수 (팝업 + 꽃가루)
+    let animationTimeout = null;
+
+    function triggerWelcomeAnimation(guestName, relation) {
+      // 대기 화면 숨기고 팝업 카드 활성화
+      standbyCard.style.display = "none";
+      
+      entryRelation.innerText = relation || "하객";
+      entryName.innerText = guestName;
+      
+      // 웰컴 팝업 활성화 클래스 주입
+      entryCard.classList.add("show");
+
+      // canvas-confetti 꽃가루 이펙트 발사!
+      fireConfettiEffect();
+
+      // 기존 타이머가 있으면 초기화
+      if (animationTimeout) clearTimeout(animationTimeout);
+
+      // 4.5초 뒤에 원래 대기 상태로 우아하게 복원시킵니다.
+      animationTimeout = setTimeout(() => {
+        entryCard.classList.remove("show");
+        // 약간의 전환 대기 시간 후 대기 카드 다시 띄움
+        setTimeout(() => {
+          if (!entryCard.classList.contains("show")) {
+            standbyCard.style.display = "block";
+          }
+        }, 600);
+      }, 4500);
+    }
+
+    // 꽃가루 발사 이펙트
+    function fireConfettiEffect() {
+      // 1) 중앙 하단 팡파레
+      confetti({
+        particleCount: 150,
+        spread: 80,
+        origin: { y: 0.75 }
+      });
+
+      // 2) 왼쪽 사이드 팡파레
+      setTimeout(() => {
+        confetti({
+          particleCount: 50,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 }
+        });
+      }, 200);
+
+      // 3) 오른쪽 사이드 팡파레
+      setTimeout(() => {
+        confetti({
+          particleCount: 50,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 }
+        });
+      }, 400);
+    }
+
+    // 3. 타임라인(하단 목록) 갱신 함수
+    async function loadRecentTimeline() {
+      if (!isSupabaseActive) return;
+
+      try {
+        const { data, error } = await supabaseClient
+          .from("visitor_logs")
+          .select("*")
+          .order("visited_at", { ascending: false })
+          .limit(10);
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          timelineContainer.innerHTML = "";
+          data.forEach(msg => {
+            const dateObj = new Date(msg.visited_at);
+            const timeString = `${String(dateObj.getHours()).padStart(2,'0')}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
+
+            const card = document.createElement("div");
+            card.className = "timeline-card";
+            card.innerHTML = `
+              <span class="timeline-badge">${msg.relation}</span>
+              <span class="timeline-name">${msg.guest_name} 님</span>
+              <span class="timeline-time">${timeString}</span>
+            `;
+            timelineContainer.appendChild(card);
+          });
+        }
+      } catch (e) {
+        console.error("타임라인 갱신 실패:", e);
+      }
+    }
+
+    // 4. Supabase Realtime 실시간 이벤트 구독
+    if (isSupabaseActive) {
+      // 최초 하단 목록 로드
+      loadRecentTimeline();
+
+      supabaseClient
+        .channel("public:visitor_logs")
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "visitor_logs" }, payload => {
+          console.log("새로운 하객 입장 감지:", payload.new);
+          
+          // 실시간 팝업 애니메이션 구동
+          triggerWelcomeAnimation(payload.new.guest_name, payload.new.relation);
+          
+          // 하단 타임라인 리스트 리로드
+          setTimeout(loadRecentTimeline, 1000);
+        })
+        .subscribe();
+    }
+
+    // 5. 테스트 데모 버튼 구동
+    const mockNames = ["김태희", "이병헌", "최민식", "송강호", "전지현", "유재석", "정우성", "한지민"];
+    const mockRelations = ["신랑 친구", "신부 동료", "신랑 대학동기", "신부 사촌", "혼주 친척", "신부 친구"];
+
+    demoBtn.addEventListener("click", () => {
+      const randomName = mockNames[Math.floor(Math.random() * mockNames.length)];
+      const randomRelation = mockRelations[Math.floor(Math.random() * mockRelations.length)];
+      
+      console.log("테스트용 입장 시뮬레이션:", randomName, randomRelation);
+      
+      // 애니메이션 수동 실행
+      triggerWelcomeAnimation(randomName, randomRelation);
+
+      // 하단 목록 모의 추가 (테스트용)
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+      
+      // 안내 카드 지우기
+      if (timelineContainer.innerText.includes("방문객을 대기하고 있습니다")) {
+        timelineContainer.innerHTML = "";
+      }
+
+      const card = document.createElement("div");
+      card.className = "timeline-card";
+      card.innerHTML = `
+        <span class="timeline-badge">${randomRelation}</span>
+        <span class="timeline-name">${randomName} 님</span>
+        <span class="timeline-time">${timeStr}</span>
+      `;
+      // 맨 앞에 배치
+      timelineContainer.insertBefore(card, timelineContainer.firstChild);
+
+      // 10명 넘어가면 뒤에 것 삭제
+      if (timelineContainer.children.length > 10) {
+        timelineContainer.removeChild(timelineContainer.lastChild);
+      }
+    });
+  </script>
+</body>
+</html>
