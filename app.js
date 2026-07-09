@@ -665,9 +665,38 @@ if (adminGuestName) {
   });
 }
 if (btnCopyGeneratedLink) {
-  btnCopyGeneratedLink.addEventListener("click", () => {
+  btnCopyGeneratedLink.addEventListener("click", async () => {
     const target = btnCopyGeneratedLink.getAttribute("data-copy-target");
-    if (target) { copyToClipboard(target); showToast("하객 전용 초대 링크가 복사되었습니다!"); }
+    if (!target) return;
+
+    // QR API 주소를 복구하여 획득
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(target)}&color=000000&bgcolor=ffffff&qzone=1&margin=0&format=png`;
+
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        // Rich Text (HTML) 형태로 복사하여 이미지와 텍스트가 카카오톡에 한 번에 들어가게 처리
+        const htmlText = `<img src="${qrApiUrl}" width="180" height="180" style="border:4px solid white; border-radius:8px;" /><br><br><a href="${target}">💌 모바일 청첩장 링크 클릭하기</a>`;
+        
+        const blobHtml = new Blob([htmlText], { type: 'text/html' });
+        const blobText = new Blob([target], { type: 'text/plain' });
+
+        const data = [new ClipboardItem({
+          'text/html': blobHtml,
+          'text/plain': blobText
+        })];
+
+        await navigator.clipboard.write(data);
+        showToast("📸 QR과 링크가 한 번에 복사되었습니다! 카톡에 붙여넣으세요.");
+      } else {
+        // Fallback: 텍스트 주소만 우선 복사
+        copyToClipboard(target);
+        showToast("링크 주소가 복사되었습니다.");
+      }
+    } catch (err) {
+      console.warn("복합 복사 실패, 일반 주소 복사로 전환:", err);
+      copyToClipboard(target);
+      showToast("링크 주소가 복사되었습니다.");
+    }
   });
 }
 
