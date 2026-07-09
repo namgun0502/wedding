@@ -557,7 +557,7 @@ function generateGuestQrAction() {
   if (!name) { alert("하객 이름을 적어주세요!"); return; }
   const baseUri  = window.location.origin + window.location.pathname;
   const finalUrl = `${baseUri}?guest=${encodeURIComponent(name)}&relation=${encodeURIComponent(relation)}`;
-  const qrApiUrl = `https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${encodeURIComponent(finalUrl)}`;
+  const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(finalUrl)}&color=000000&bgcolor=ffffff&qzone=1&margin=0&format=png`;
   if (generatedQrContainer) generatedQrContainer.innerHTML = `<img src="${qrApiUrl}" alt="하객 전용 QR" style="border:4px solid white;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,0.3);">`;
   if (generatedLinkText) generatedLinkText.innerText = finalUrl;
   if (btnCopyGeneratedLink) btnCopyGeneratedLink.setAttribute("data-copy-target", finalUrl);
