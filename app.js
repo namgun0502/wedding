@@ -3,7 +3,8 @@
    - 실시간 편집기, 암호화 저장, Supabase 연동, 웰컴보드, QR 추적
    - 관리자 비밀번호 wedding_admin_auth 독립 테이블 인증
    - 브라우저 자동완성 방지 체크박스 스위치
-   - showEmptyNotice / openDeleteModal / closeDeleteModal 누락 함수 정의 추가
+   - 하객용 QR 생성 시 UUID 기반 티켓 발급(wedding_tickets) 및 현장 검증 연동
+   - 클립보드 복사 시 QR 이미지를 Base64 데이터로 받아 리치 텍스트 복사 (카톡 연동 최적화)
    ========================================================================== */
 
 /* ==========================================================================
@@ -297,7 +298,6 @@ const deletePasswordInput    = document.getElementById("delete-password-input");
 const btnConfirmDelete       = document.getElementById("btn-confirm-delete-message");
 let messageIdToDelete        = null;
 
-// ★ 누락됐던 함수들 정의 추가 ★
 function showEmptyNotice() {
   if (emptyNotice) emptyNotice.style.display = "block";
   if (guestbookListContainer) guestbookListContainer.innerHTML = "";
@@ -316,7 +316,6 @@ function closeDeleteModal() {
   if (deletePasswordInput) deletePasswordInput.value = "";
 }
 
-// 삭제 모달 닫기 버튼
 const btnCloseModal = document.getElementById("btn-close-modal");
 if (btnCloseModal) btnCloseModal.addEventListener("click", closeDeleteModal);
 if (deleteModal) deleteModal.addEventListener("click", e => { if (e.target === deleteModal) closeDeleteModal(); });
@@ -501,98 +500,6 @@ function closeCheckinModal() {
 if (btnCloseCheckinModal) btnCloseCheckinModal.addEventListener("click", closeCheckinModal);
 if (checkinModal) checkinModal.addEventListener("click", e => { if (e.target === checkinModal) closeCheckinModal(); });
 
-/* ==========================================================================
-   [K-2. 하객 개인 청첩장 체크인 배너 시스템]
-   URL에 ?guest=이름&relation=관계 파라미터가 있을 때만 배너를 표시하고,
-   하객이 직접 "체크인" 버튼을 눌러야만 DB에 등록합니다.
-   ========================================================================== */
-async function handleUrlGuestCheckin() {
-  const urlParams   = new URLSearchParams(window.location.search);
-  const guestName   = urlParams.get("guest");
-  const relationVal = urlParams.get("relation") || "하객";
-
-  // URL에 guest 파라미터가 없으면 아무것도 하지 않습니다.
-  if (!guestName) return;
-
-  // 배너 요소들 가져오기
-  const banner         = document.getElementById("guest-checkin-banner");
-  const bannerName     = document.getElementById("banner-guest-name");
-  const bannerRelation = document.getElementById("banner-guest-relation");
-  const checkinBtn     = document.getElementById("banner-checkin-btn");
-  const successMsg     = document.getElementById("banner-success-msg");
-  const collapseBtn    = document.getElementById("banner-collapse-btn");
-
-  if (!banner) return;
-
-  // 배너에 하객 이름 및 관계 표시
-  if (bannerName)     bannerName.innerText     = guestName;
-  if (bannerRelation) bannerRelation.innerText  = relationVal;
-
-  // 배너를 화면에 띄우고, body에 여백 클래스 추가
-  banner.style.display = "block";
-  document.body.classList.add("has-checkin-banner");
-
-  // 이미 이 세션에서 체크인한 경우라면 버튼을 완료 상태로 표시
-  const sessionKey = `visitor_checked_${guestName}`;
-  if (sessionStorage.getItem(sessionKey)) {
-    if (checkinBtn)   { checkinBtn.disabled = true; checkinBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> 체크인 완료'; }
-    if (successMsg)   successMsg.classList.add("show");
-    return;
-  }
-
-  // 체크인 버튼 클릭 이벤트: 직접 누를 때만 DB에 등록
-  if (checkinBtn) {
-    checkinBtn.addEventListener("click", async () => {
-      checkinBtn.disabled = true;
-      checkinBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 등록 중...';
-
-      if (isSupabaseActive) {
-        try {
-          const { error } = await supabaseClient
-            .from("wedding_visitor_logs")
-            .insert({ guest_name: guestName, relation: relationVal });
-
-          if (error) throw error;
-
-          // 성공: 세션에 기록 후 완료 메시지 표시
-          sessionStorage.setItem(sessionKey, "true");
-          checkinBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> 체크인 완료!';
-          if (successMsg) successMsg.classList.add("show");
-          showToast(`🌸 ${guestName} 님, 전광판에 성함이 표시됩니다! 🌸`);
-
-        } catch (e) {
-          console.error("체크인 등록 실패:", e);
-          checkinBtn.disabled = false;
-          checkinBtn.innerHTML = '<i class="fa-solid fa-door-open"></i> 다시 시도하기';
-          showToast("⚠️ 체크인에 실패했습니다. 다시 눌러주세요.");
-        }
-      } else {
-        // Supabase 미연결 시 로컬 완료 처리
-        sessionStorage.setItem(sessionKey, "true");
-        checkinBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> 체크인 완료!';
-        if (successMsg) successMsg.classList.add("show");
-        showToast(`🌸 ${guestName} 님 환영합니다! 🌸`);
-      }
-    });
-  }
-
-  // 배너 접기 버튼
-  if (collapseBtn) {
-    collapseBtn.addEventListener("click", () => {
-      banner.style.animation = "none";
-      banner.style.transform = "translateY(-100%)";
-      banner.style.opacity   = "0";
-      banner.style.transition = "all 0.4s ease";
-      setTimeout(() => {
-        banner.style.display = "none";
-        document.body.classList.remove("has-checkin-banner");
-      }, 400);
-    });
-  }
-}
-
-handleUrlGuestCheckin();
-
 if (btnSubmitCheckin) {
   btnSubmitCheckin.addEventListener("click", async () => {
     const nameStr = checkinNameInput ? checkinNameInput.value.trim() : "";
@@ -613,21 +520,87 @@ if (btnSubmitCheckin) {
   });
 }
 
+/* ==========================================================================
+   [K-2. 하객 개인 청첩장 체크인 배너 시스템]
+   URL에 ?guest=이름&relation=관계 파라미터가 있을 때만 배너를 표시하고,
+   하객이 직접 "체크인" 버튼을 눌러야만 DB에 등록합니다.
+   ========================================================================== */
 async function handleUrlGuestCheckin() {
   const urlParams   = new URLSearchParams(window.location.search);
   const guestName   = urlParams.get("guest");
   const relationVal = urlParams.get("relation") || "하객";
-  if (guestName && isSupabaseActive) {
-    const sessionKey = `visitor_checked_${guestName}`;
-    if (!sessionStorage.getItem(sessionKey)) {
-      try {
-        await supabaseClient.from("wedding_visitor_logs").insert({ guest_name: guestName, relation: relationVal });
+
+  if (!guestName) return;
+
+  const banner         = document.getElementById("guest-checkin-banner");
+  const bannerName     = document.getElementById("banner-guest-name");
+  const bannerRelation = document.getElementById("banner-guest-relation");
+  const checkinBtn     = document.getElementById("banner-checkin-btn");
+  const successMsg     = document.getElementById("banner-success-msg");
+  const collapseBtn    = document.getElementById("banner-collapse-btn");
+
+  if (!banner) return;
+
+  if (bannerName)     bannerName.innerText     = guestName;
+  if (bannerRelation) bannerRelation.innerText  = relationVal;
+
+  banner.style.display = "block";
+  document.body.classList.add("has-checkin-banner");
+
+  const sessionKey = `visitor_checked_${guestName}`;
+  if (sessionStorage.getItem(sessionKey)) {
+    if (checkinBtn)   { checkinBtn.disabled = true; checkinBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> 체크인 완료'; }
+    if (successMsg)   successMsg.classList.add("show");
+    return;
+  }
+
+  if (checkinBtn) {
+    checkinBtn.addEventListener("click", async () => {
+      checkinBtn.disabled = true;
+      checkinBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 등록 중...';
+
+      if (isSupabaseActive) {
+        try {
+          const { error } = await supabaseClient
+            .from("wedding_visitor_logs")
+            .insert({ guest_name: guestName, relation: relationVal });
+
+          if (error) throw error;
+
+          sessionStorage.setItem(sessionKey, "true");
+          checkinBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> 체크인 완료!';
+          if (successMsg) successMsg.classList.add("show");
+          showToast(`🌸 ${guestName} 님, 전광판에 성함이 표시됩니다! 🌸`);
+
+        } catch (e) {
+          console.error("체크인 등록 실패:", e);
+          checkinBtn.disabled = false;
+          checkinBtn.innerHTML = '<i class="fa-solid fa-door-open"></i> 다시 시도하기';
+          showToast("⚠️ 체크인에 실패했습니다. 다시 눌러주세요.");
+        }
+      } else {
         sessionStorage.setItem(sessionKey, "true");
-        showToast(`🌸 ${guestName} 님, 청첩장 방문을 환영합니다! 🌸`);
-      } catch (e) { console.error("자동 체크인 에러:", e); }
-    }
+        checkinBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> 체크인 완료!';
+        if (successMsg) successMsg.classList.add("show");
+        showToast(`🌸 ${guestName} 님 환영합니다! 🌸`);
+      }
+    });
+  }
+
+  if (collapseBtn) {
+    collapseBtn.addEventListener("click", () => {
+      banner.style.animation = "none";
+      banner.style.transform = "translateY(-100%)";
+      banner.style.opacity   = "0";
+      banner.style.transition = "all 0.4s ease";
+      setTimeout(() => {
+        banner.style.display = "none";
+        document.body.classList.remove("has-checkin-banner");
+      }, 400);
+    });
   }
 }
+
 handleUrlGuestCheckin();
 
 /* ==========================================================================
@@ -643,18 +616,49 @@ const btnCopyGeneratedLink = document.getElementById("btn-copy-generated-link");
 const adminVisitorList     = document.getElementById("admin-visitor-list");
 const btnClearVisitors     = document.getElementById("btn-clear-visitors");
 
-function generateGuestQrAction() {
+// ★ QR입장 티켓 테이블 연계 생성 ★
+async function generateGuestQrAction() {
   const name = adminGuestName ? adminGuestName.value.trim() : "";
   const relation = adminGuestRelation ? adminGuestRelation.value : "하객";
   if (!name) { alert("하객 이름을 적어주세요!"); return; }
-  const baseUri  = window.location.origin + window.location.pathname;
-  const finalUrl = `${baseUri}?guest=${encodeURIComponent(name)}&relation=${encodeURIComponent(relation)}`;
+
+  let finalUrl = "";
+
+  if (isSupabaseActive) {
+    try {
+      // 1) wedding_tickets 테이블에 UUID 고유 티켓 데이터 발급
+      const { data, error } = await supabaseClient
+        .from("wedding_tickets")
+        .insert({ guest_name: name, relation: relation })
+        .select("id")
+        .single();
+
+      if (error) throw error;
+
+      // 2) 발급된 UUID 기반 ticket.html 검증 링크 생성
+      const baseUri = window.location.origin + window.location.pathname.replace("index.html", "");
+      finalUrl = `${baseUri}ticket.html?tid=${data.id}`;
+
+    } catch (e) {
+      console.warn("Supabase 티켓 발급 실패, 이전 모바일 청첩장 링크로 대체합니다:", e);
+      const baseUri = window.location.origin + window.location.pathname;
+      finalUrl = `${baseUri}?guest=${encodeURIComponent(name)}&relation=${encodeURIComponent(relation)}`;
+    }
+  } else {
+    // 오프라인 모드 Fallback
+    const baseUri = window.location.origin + window.location.pathname;
+    finalUrl = `${baseUri}?guest=${encodeURIComponent(name)}&relation=${encodeURIComponent(relation)}`;
+  }
+
+  // QR API 호출
   const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(finalUrl)}&color=000000&bgcolor=ffffff&qzone=1&margin=0&format=png`;
+  
   if (generatedQrContainer) generatedQrContainer.innerHTML = `<img src="${qrApiUrl}" alt="하객 전용 QR" style="border:4px solid white;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,0.3);">`;
   if (generatedLinkText) generatedLinkText.innerText = finalUrl;
   if (btnCopyGeneratedLink) btnCopyGeneratedLink.setAttribute("data-copy-target", finalUrl);
   if (qrResultBox) qrResultBox.style.display = "block";
-  showToast(`${name} 님의 QR 코드가 생성되었습니다.`);
+  
+  showToast(`${name} 님의 모바일 입장 티켓 QR이 발급되었습니다.`);
   if (adminGuestName) { adminGuestName.value = ""; adminGuestName.focus(); }
 }
 
@@ -664,18 +668,39 @@ if (adminGuestName) {
     if (e.key === "Enter") { e.preventDefault(); generateGuestQrAction(); }
   });
 }
+
+// Helper: 이미지 URL을 base64 문자열로 변환하는 비동기 함수
+function fetchImageAsBase64(url) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
 if (btnCopyGeneratedLink) {
   btnCopyGeneratedLink.addEventListener("click", async () => {
     const target = btnCopyGeneratedLink.getAttribute("data-copy-target");
     if (!target) return;
 
-    // QR API 주소를 복구하여 획득
     const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(target)}&color=000000&bgcolor=ffffff&qzone=1&margin=0&format=png`;
 
     try {
       if (navigator.clipboard && window.isSecureContext) {
-        // Rich Text (HTML) 형태로 복사하여 이미지와 텍스트가 카카오톡에 한 번에 들어가게 처리
-        const htmlText = `<img src="${qrApiUrl}" width="180" height="180" style="border:4px solid white; border-radius:8px;" /><br><br><a href="${target}">💌 모바일 청첩장 링크 클릭하기</a>`;
+        showToast("🔄 QR코드 파일을 메모리에 복사하고 있습니다...");
+        
+        // QR 이미지를 base64 데이터로 직접 획득 (CORS 완벽 우회 및 유실 원천 차단)
+        const base64Image = await fetchImageAsBase64(qrApiUrl);
+
+        // Rich Text (HTML) 형태로 복사하여 카카오톡에 이미지 파일 + 텍스트 링크가 한번에 삽입되도록 처리
+        const htmlText = `<img src="${base64Image}" width="200" height="200" /><br><br><a href="${target}">🎫 입장 티켓 확인 및 모바일 청첩장 링크 클릭하기</a>`;
         
         const blobHtml = new Blob([htmlText], { type: 'text/html' });
         const blobText = new Blob([target], { type: 'text/plain' });
@@ -686,14 +711,13 @@ if (btnCopyGeneratedLink) {
         })];
 
         await navigator.clipboard.write(data);
-        showToast("📸 QR과 링크가 한 번에 복사되었습니다! 카톡에 붙여넣으세요.");
+        showToast("📸 QR 파일과 링크가 한 번에 복사되었습니다! 카톡에 붙여넣으세요.");
       } else {
-        // Fallback: 텍스트 주소만 우선 복사
         copyToClipboard(target);
         showToast("링크 주소가 복사되었습니다.");
       }
     } catch (err) {
-      console.warn("복합 복사 실패, 일반 주소 복사로 전환:", err);
+      console.warn("Base64 복합 복사 실패, 일반 주소 복사로 전환:", err);
       copyToClipboard(target);
       showToast("링크 주소가 복사되었습니다.");
     }
@@ -785,7 +809,6 @@ const btnCloseSettings    = document.getElementById("btn-close-settings");
 const btnSaveSettings     = document.getElementById("btn-save-settings");
 const btnResetSettings    = document.getElementById("btn-reset-settings");
 
-// 비밀번호 변경 체크박스 & 입력 인풋
 const changePasswordToggle = document.getElementById("cfg-changePasswordToggle");
 const adminPasswordInput   = document.getElementById("cfg-adminPassword");
 
@@ -811,6 +834,20 @@ if (fabBtn) {
   });
 }
 
+function closeSettingsPanel() {
+  if (settingsPanel) settingsPanel.classList.remove("show");
+  if (fabBtn) fabBtn.classList.remove("active");
+  if (changePasswordToggle && adminPasswordInput) {
+    changePasswordToggle.checked = false;
+    adminPasswordInput.setAttribute("disabled", "true");
+    adminPasswordInput.placeholder = "위 체크박스를 선택하면 입력 가능";
+    adminPasswordInput.value = "";
+  }
+}
+
+if (btnCloseSettings) btnCloseSettings.addEventListener("click", closeSettingsPanel);
+if (settingsPanel) settingsPanel.addEventListener("click", e => { if (e.target === settingsPanel) closeSettingsPanel(); });
+
 function closeAdminPwModal() {
   if (adminPwModal) adminPwModal.classList.remove("show");
   if (adminPwInput) adminPwInput.value = "";
@@ -822,11 +859,10 @@ if (btnCloseAdminPw) btnCloseAdminPw.addEventListener("click", closeAdminPwModal
 if (adminPwModal) adminPwModal.addEventListener("click", e => { if (e.target === adminPwModal) closeAdminPwModal(); });
 if (adminPwInput) adminPwInput.addEventListener("keydown", e => { if (e.key === "Enter") btnConfirmAdminPw.click(); });
 
-// ★ 비밀번호 확인 로직: Supabase DB 우선, 실패 시 로컬 백업, 그것도 없으면 기본값 "1234" ★
 if (btnConfirmAdminPw) {
   btnConfirmAdminPw.addEventListener("click", async () => {
     const entered = adminPwInput.value.trim();
-    let correct = DEFAULT_ADMIN_PASSWORD; // 기본값 "1234"
+    let correct = DEFAULT_ADMIN_PASSWORD;
 
     if (isSupabaseActive) {
       try {
@@ -838,7 +874,6 @@ if (btnConfirmAdminPw) {
 
         if (!error && data && data.password_hash) {
           const decoded = decryptData(data.password_hash);
-          // 복호화된 값이 정상적인 문자열이면 사용, 아니면 기본값 유지
           if (decoded && decoded.length > 0) {
             correct = decoded;
           }
@@ -881,20 +916,6 @@ if (btnConfirmAdminPw) {
   });
 }
 
-function closeSettingsPanel() {
-  if (settingsPanel) settingsPanel.classList.remove("show");
-  if (fabBtn) fabBtn.classList.remove("active");
-  if (changePasswordToggle && adminPasswordInput) {
-    changePasswordToggle.checked = false;
-    adminPasswordInput.setAttribute("disabled", "true");
-    adminPasswordInput.placeholder = "위 체크박스를 선택하면 입력 가능";
-    adminPasswordInput.value = "";
-  }
-}
-
-if (btnCloseSettings) btnCloseSettings.addEventListener("click", closeSettingsPanel);
-if (settingsPanel) settingsPanel.addEventListener("click", e => { if (e.target === settingsPanel) closeSettingsPanel(); });
-
 function populateSettingsPanel(config) {
   document.querySelectorAll(".settings-field input[data-cfg-key]").forEach(input => {
     const key = input.getAttribute("data-cfg-key");
@@ -914,7 +935,6 @@ if (btnSaveSettings) {
     document.querySelectorAll(".settings-field input[data-cfg-key]").forEach(input => {
       const key = input.getAttribute("data-cfg-key");
       const val = input.value.trim();
-      // ★ 체크박스가 체크되어 있어야만 비밀번호 변경 처리 ★
       if (key === "adminPassword") {
         if (changePasswordToggle && changePasswordToggle.checked && val.length > 0) {
           newAdminPw = val;

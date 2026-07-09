@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>하객 모바일 입장 티켓 검증 | Ticket Verification</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Playfair+Display:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Supabase SDK 로드 -->
+  <script src="supabase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --bg-color: #120F0D;
+      --text-gold: #D4A373;
+      --text-white: #FDFBF7;
+      --border-color: #3D3028;
+      
+      /* 상태별 테마 색상 */
+      --color-success: #2A9D8F; /* 인증 완료 (초록) */
+      --color-warning: #E9C46A; /* 이미 입장 (노랑) */
+      --color-error: #E76F51;   /* 위조/오류 (빨강) */
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-white);
+      font-family: 'Gowun Batang', 'Nanum Myeongjo', Georgia, serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at 50% 30%, rgba(212, 163, 115, 0.08) 0%, transparent 60%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .ticket-card {
+      width: 100%;
+      max-width: 420px;
+      background: linear-gradient(160deg, rgba(37,30,26,0.98) 0%, rgba(22,17,14,0.98) 100%);
+      border: 1px solid var(--border-color);
+      border-radius: 28px;
+      padding: 40px 30px;
+      text-align: center;
+      z-index: 2;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      transition: border-color 0.5s ease, box-shadow 0.5s ease;
+    }
+
+    /* 상단 장식 라인 */
+    .ticket-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 6px;
+      background: var(--border-color);
+      transition: background 0.5s ease;
+    }
+
+    /* 상태별 카드 외곽선 변환 효과 */
+    .ticket-card.state-success { border-color: var(--color-success); box-shadow: 0 20px 60px rgba(42, 157, 143, 0.15); }
+    .ticket-card.state-success::after { background: var(--color-success); }
+
+    .ticket-card.state-warning { border-color: var(--color-warning); box-shadow: 0 20px 60px rgba(233, 196, 106, 0.15); }
+    .ticket-card.state-warning::after { background: var(--color-warning); }
+
+    .ticket-card.state-error { border-color: var(--color-error); box-shadow: 0 20px 60px rgba(230, 111, 81, 0.15); }
+    .ticket-card.state-error::after { background: var(--color-error); }
+
+    /* 대형 아이콘 박스 */
+    .status-icon-box {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 38px;
+      color: var(--text-gold);
+      transition: all 0.5s ease;
+    }
+    .state-success .status-icon-box { background: rgba(42, 157, 143, 0.1); border-color: var(--color-success); color: var(--color-success); }
+    .state-warning .status-icon-box { background: rgba(233, 196, 106, 0.1); border-color: var(--color-warning); color: var(--color-warning); }
+    .state-error .status-icon-box { background: rgba(230, 111, 81, 0.1); border-color: var(--color-error); color: var(--color-error); }
+
+    .ticket-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 14px;
+      letter-spacing: 4px;
+      color: var(--text-gold);
+    }
+
+    /* 검증 안내 결과 메시지 */
+    .status-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-white);
+      line-height: 1.3;
+    }
+
+    .guest-info-box {
+      width: 100%;
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .info-label { color: #8E7C77; }
+    .info-value { font-weight: 700; color: var(--text-white); }
+    .info-value.highlight-name { font-size: 20px; color: var(--text-gold); }
+
+    .status-desc {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #A59690;
+    }
+
+    .back-btn {
+      width: 100%;
+      background: none;
+      border: 1px solid var(--border-color);
+      color: #8E7C77;
+      font-family: inherit;
+      font-size: 14px;
+      padding: 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 10px;
+    }
+    .back-btn:hover {
+      border-color: var(--text-gold);
+      color: var(--text-gold);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ticket-card" id="verify-card">
+    
+    <!-- 타이틀 -->
+    <div class="ticket-title">TICKET VERIFICATION</div>
+
+    <!-- 로딩/상태 아이콘 -->
+    <div class="status-icon-box" id="status-icon">
+      <i class="fa-solid fa-spinner fa-spin"></i>
+    </div>
+
+    <!-- 검증 결과 제목 -->
+    <h2 class="status-title" id="status-title">티켓 검증 중...</h2>
+
+    <!-- 하객 기본 정보 정보판 (기본 숨김) -->
+    <div class="guest-info-box" id="guest-info-box" style="display: none;">
+      <div class="info-row">
+        <span class="info-label">하객 성함</span>
+        <span class="info-value highlight-name" id="info-name">-</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">관계 정보</span>
+        <span class="info-value" id="info-relation">-</span>
+      </div>
+      <div class="info-row" id="row-time" style="display: none;">
+        <span class="info-label" id="label-time">입장 승인 시각</span>
+        <span class="info-value" id="info-time">-</span>
+      </div>
+    </div>
+
+    <!-- 상세 상태 설명 -->
+    <p class="status-desc" id="status-desc">
+      Supabase 보안 클라우드와 대조하여<br>
+      유효한 하객 티켓인지 검증하고 있습니다.
+    </p>
+
+    <!-- 청첩장 돌아가기 버튼 -->
+    <a href="index.html" class="back-btn">청첩장 메인으로 가기</a>
+
+  </div>
+
+  <script>
+    const verifyCard  = document.getElementById("verify-card");
+    const statusIcon  = document.getElementById("status-icon");
+    const statusTitle = document.getElementById("status-title");
+    const statusDesc  = document.getElementById("status-desc");
+    const guestInfoBox= document.getElementById("guest-info-box");
+    const infoName    = document.getElementById("info-name");
+    const infoRelation= document.getElementById("info-relation");
+    const rowTime     = document.getElementById("row-time");
+    const labelTime   = document.getElementById("label-time");
+    const infoTime    = document.getElementById("info-time");
+
+    let isSupabaseActive = false;
+    let supabaseClient = null;
+
+    // 1. Supabase 초기화
+    if (
+      typeof SUPABASE_CONFIG !== "undefined" &&
+      SUPABASE_CONFIG.SUPABASE_URL &&
+      SUPABASE_CONFIG.SUPABASE_ANON_KEY &&
+      SUPABASE_CONFIG.SUPABASE_URL !== "YOUR_SUPABASE_PROJECT_URL_HERE"
+    ) {
+      try {
+        const { createClient } = supabase;
+        supabaseClient = createClient(SUPABASE_CONFIG.SUPABASE_URL, SUPABASE_CONFIG.SUPABASE_ANON_KEY);
+        isSupabaseActive = true;
+      } catch (e) {
+        console.error("Supabase 초기화 오류:", e);
+      }
+    }
+
+    // 2. 입장 티켓 검증 및 연동 로직
+    async function verifyTicket() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const ticketId  = urlParams.get("tid");
+
+      if (!isSupabaseActive) {
+        showError("데이터베이스 연동이 안 되어 있어<br>실시간 검증을 수행할 수 없습니다.");
+        return;
+      }
+
+      if (!ticketId) {
+        showError("티켓 고유키(tid)가 누락되었습니다.<br>올바른 입장 QR을 확인해 주세요.");
+        return;
+      }
+
+      try {
+        // A) wedding_tickets 테이블에서 해당 UUID의 티켓 정보 조회
+        const { data: ticket, error } = await supabaseClient
+          .from("wedding_tickets")
+          .select("*")
+          .eq("id", ticketId)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        // 존재하지 않는 티켓 처리
+        if (!ticket) {
+          showError("유효하지 않은 입장권입니다.<br>등록된 초대 명단에 존재하지 않습니다.");
+          return;
+        }
+
+        // 하객 정보 노출
+        infoName.innerText = ticket.guest_name;
+        infoRelation.innerText = ticket.relation;
+        guestInfoBox.style.display = "flex";
+
+        // B) 분기 처리 (이미 사용된 티켓인지 검사)
+        if (ticket.is_used) {
+          // 이미 입장한 경우 (노랑 경고 화면)
+          showWarning(ticket);
+        } else {
+          // 처음 입장하는 경우 (초록 성공 화면)
+          await approveTicket(ticket);
+        }
+
+      } catch (e) {
+        console.error("검증 에러 발생:", e);
+        showError("서버와의 통신 오류가 발생했습니다.<br>다시 시도하거나 수동으로 등록해 주세요.");
+      }
+    }
+
+    // 처음 입장하는 티켓 승인 처리 및 웰컴보드 연동
+    async function approveTicket(ticket) {
+      const nowStr = new Date().toISOString();
+
+      try {
+        // 1) 티켓 사용 처리
+        const { error: patchError } = await supabaseClient
+          .from("wedding_tickets")
+          .update({ is_used: true, used_at: nowStr })
+          .eq("id", ticket.id);
+
+        if (patchError) throw patchError;
+
+        // 2) 웰컴보드에 실시간 등장하도록 wedding_visitor_logs 에 등록 (꽃가루 트리거)
+        const { error: logError } = await supabaseClient
+          .from("wedding_visitor_logs")
+          .insert({ guest_name: ticket.guest_name, relation: ticket.relation });
+
+        if (logError) throw logError;
+
+        // UI 갱신 (성공화면)
+        verifyCard.className = "ticket-card state-success";
+        statusIcon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+        statusTitle.innerText = "확인되었습니다 🟢";
+        statusDesc.innerHTML = `${ticket.guest_name} 님의 입장이 안전하게 승인되었습니다.<br>예식장 입구 웰컴 모니터에 환영 인사가 연출됩니다.`;
+        
+        const now = new Date();
+        infoTime.innerText = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+        labelTime.innerText = "입장 승인 시각";
+        rowTime.style.display = "flex";
+
+      } catch (err) {
+        console.error("승인 트랜잭션 에러:", err);
+        showError("티켓 사용 승인 처리 중 에러가 났습니다.");
+      }
+    }
+
+    // 이미 사용된 티켓 UI 연출
+    function showWarning(ticket) {
+      verifyCard.className = "ticket-card state-warning";
+      statusIcon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+      statusTitle.innerText = "이미 입장 완료 🟡";
+      statusDesc.innerHTML = `이 티켓은 이미 이전에 확인 완료되었습니다.<br>동일한 티켓의 중복/다중 입장을 차단합니다.`;
+      
+      const d = new Date(ticket.used_at);
+      infoTime.innerText = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      labelTime.innerText = "최초 승인 시각";
+      rowTime.style.display = "flex";
+    }
+
+    // 에러 UI 연출
+    function showError(msg) {
+      verifyCard.className = "ticket-card state-error";
+      statusIcon.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
+      statusTitle.innerText = "인증 실패 🔴";
+      statusDesc.innerHTML = msg;
+      guestInfoBox.style.display = "none";
+      rowTime.style.display = "none";
+    }
+
+    // 검증 시작
+    verifyTicket();
+  </script>
+</body>
+</html>
