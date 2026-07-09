@@ -7,6 +7,7 @@
    - (테이블 충돌 방지: wedding_guestbook, wedding_visitor_logs 사용)
    - (관리자 비밀번호 수파베이스 wedding_admin_auth 분리 연동)
    - (대량 QR 생성을 위한 키보드 편의성 및 포커스 복귀 추가)
+   - (브라우저 자동완성 비밀번호 초기화 에러 원천 차단 스위치 탑재)
    ========================================================================== */
 
 /* ==========================================================================
@@ -604,7 +605,6 @@ const btnCopyGeneratedLink = document.getElementById("btn-copy-generated-link");
 const adminVisitorList    = document.getElementById("admin-visitor-list");
 const btnClearVisitors    = document.getElementById("btn-clear-visitors");
 
-// 1) QR 생성 함수
 function generateGuestQrAction() {
   const name = adminGuestName.value.trim();
   const relation = adminGuestRelation.value;
@@ -625,7 +625,6 @@ function generateGuestQrAction() {
   qrResultBox.style.display = "block";
   showToast(`${name} 님의 QR 코드가 생성되었습니다.`);
 
-  // ★ 편의성 개선: 입력 필드를 비우고, 다시 마우스 클릭 없이 입력할 수 있게 포커스를 대기시킵니다.
   adminGuestName.value = "";
   adminGuestName.focus();
 }
@@ -634,7 +633,6 @@ if (btnGenerateGuestQr) {
   btnGenerateGuestQr.addEventListener("click", generateGuestQrAction);
 }
 
-// ★ 인풋창에서 Enter 키를 누르면 즉시 QR을 생성해주는 편의 기능 추가
 if (adminGuestName) {
   adminGuestName.addEventListener("keydown", e => {
     if (e.key === "Enter") {
@@ -771,6 +769,25 @@ const btnCloseSettings = document.getElementById("btn-close-settings");
 const btnSaveSettings  = document.getElementById("btn-save-settings");
 const btnResetSettings = document.getElementById("btn-reset-settings");
 
+// 토글 및 패스워드 입력 인풋 참조
+const changePasswordToggle = document.getElementById("cfg-changePasswordToggle");
+const adminPasswordInput   = document.getElementById("cfg-adminPassword");
+
+// 토글 체크박스 체인지 리스너 (체크해야만 비밀번호 인풋 필드를 활성화시킴)
+if (changePasswordToggle && adminPasswordInput) {
+  changePasswordToggle.addEventListener("change", () => {
+    if (changePasswordToggle.checked) {
+      adminPasswordInput.removeAttribute("disabled");
+      adminPasswordInput.placeholder = "변경할 비밀번호 입력 (4자리)";
+      adminPasswordInput.focus();
+    } else {
+      adminPasswordInput.setAttribute("disabled", "true");
+      adminPasswordInput.placeholder = "위 체크박스를 선택하면 입력 가능";
+      adminPasswordInput.value = "";
+    }
+  });
+}
+
 fabBtn.addEventListener("click", () => {
   adminPwInput.value = "";
   adminPwModal.classList.add("show");
@@ -790,7 +807,6 @@ adminPwModal.addEventListener("click", e => { if (e.target === adminPwModal) clo
 
 adminPwInput.addEventListener("keydown", e => { if (e.key === "Enter") btnConfirmAdminPw.click(); });
 
-// ─ 수파베이스 DB에서 관리자 비밀번호를 안전하게 조회하는 비동기 로그인 구현
 btnConfirmAdminPw.addEventListener("click", async () => {
   const entered = adminPwInput.value.trim();
   let correct = DEFAULT_ADMIN_PASSWORD;
@@ -814,7 +830,6 @@ btnConfirmAdminPw.addEventListener("click", async () => {
       if (localBackup) correct = decryptData(localBackup);
     }
   } else {
-    // 오프라인/로컬스토리지 모드 시 백업 비밀번호 조회
     const localBackup = localStorage.getItem(ADMIN_PASSWORD_STORAGE_KEY);
     if (localBackup) correct = decryptData(localBackup);
   }
@@ -842,6 +857,13 @@ btnConfirmAdminPw.addEventListener("click", async () => {
 function closeSettingsPanel() {
   settingsPanel.classList.remove("show");
   fabBtn.classList.remove("active");
+  // 패널을 닫을 때 비밀번호 변경 토글 스위치들을 비활성화 상태로 원복합니다
+  if (changePasswordToggle && adminPasswordInput) {
+    changePasswordToggle.checked = false;
+    adminPasswordInput.setAttribute("disabled", "true");
+    adminPasswordInput.placeholder = "위 체크박스를 선택하면 입력 가능";
+    adminPasswordInput.value = "";
+  }
 }
 btnCloseSettings.addEventListener("click", closeSettingsPanel);
 settingsPanel.addEventListener("click", e => { if (e.target === settingsPanel) closeSettingsPanel(); });
@@ -857,7 +879,6 @@ function populateSettingsPanel(config) {
   });
 }
 
-// 설정값 및 새 관리자 비밀번호 개별 테이블 업데이트
 btnSaveSettings.addEventListener("click", async () => {
   const updatedConfig = { ...currentConfig };
   let newAdminPw = "";
@@ -866,20 +887,22 @@ btnSaveSettings.addEventListener("click", async () => {
     const key = input.getAttribute("data-cfg-key");
     const val = input.value.trim();
 
+    // ★ 자동완성 방어막: 체크박스가 체크되어 있을 때만 비밀번호 수정을 유효하게 처리합니다!
     if (key === "adminPassword") {
-      if (val.length > 0) newAdminPw = val;
+      if (changePasswordToggle && changePasswordToggle.checked && val.length > 0) {
+        newAdminPw = val;
+      }
     } else if (val.length > 0) {
       updatedConfig[key] = val;
     }
   });
 
-  // 1) 일반 설정 정보 저장
   saveWeddingConfig(updatedConfig);
 
-  // 2) 신규 비밀번호 입력 시, 단독 auth 테이블에 안전하게 업데이트 처리
+  // 비밀번호 변경 요청이 활성화되어 있을 때만 데이터베이스를 덮어씁니다.
   if (newAdminPw.length > 0) {
     const hashed = encryptData(newAdminPw);
-    localStorage.setItem(ADMIN_PASSWORD_STORAGE_KEY, hashed); // 로컬 백업
+    localStorage.setItem(ADMIN_PASSWORD_STORAGE_KEY, hashed);
 
     if (isSupabaseActive) {
       try {
@@ -889,7 +912,7 @@ btnSaveSettings.addEventListener("click", async () => {
           .eq("id", 1);
 
         if (error) throw error;
-        console.log("Supabase에 신규 관리자 비밀번호가 안전하게 저장되었습니다.");
+        console.log("Supabase에 신규 관리자 비밀번호가 저장되었습니다.");
       } catch (e) {
         console.error("Supabase 관리자 비밀번호 업데이트 실패:", e);
       }
@@ -910,7 +933,6 @@ btnResetSettings.addEventListener("click", () => {
       supabaseClient.from("wedding_visitor_logs").delete().neq("guest_name", "").then(() => {
         console.log("Supabase 하객 로그 초기화.");
       });
-      // 비밀번호 1234로 초기화
       const defaultHash = encryptData(DEFAULT_ADMIN_PASSWORD);
       supabaseClient.from("wedding_admin_auth").update({ password_hash: defaultHash }).eq("id", 1).then(() => {
         console.log("Supabase 관리자 비밀번호 초기화.");
