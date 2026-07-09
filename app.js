@@ -501,6 +501,98 @@ function closeCheckinModal() {
 if (btnCloseCheckinModal) btnCloseCheckinModal.addEventListener("click", closeCheckinModal);
 if (checkinModal) checkinModal.addEventListener("click", e => { if (e.target === checkinModal) closeCheckinModal(); });
 
+/* ==========================================================================
+   [K-2. 하객 개인 청첩장 체크인 배너 시스템]
+   URL에 ?guest=이름&relation=관계 파라미터가 있을 때만 배너를 표시하고,
+   하객이 직접 "체크인" 버튼을 눌러야만 DB에 등록합니다.
+   ========================================================================== */
+async function handleUrlGuestCheckin() {
+  const urlParams   = new URLSearchParams(window.location.search);
+  const guestName   = urlParams.get("guest");
+  const relationVal = urlParams.get("relation") || "하객";
+
+  // URL에 guest 파라미터가 없으면 아무것도 하지 않습니다.
+  if (!guestName) return;
+
+  // 배너 요소들 가져오기
+  const banner         = document.getElementById("guest-checkin-banner");
+  const bannerName     = document.getElementById("banner-guest-name");
+  const bannerRelation = document.getElementById("banner-guest-relation");
+  const checkinBtn     = document.getElementById("banner-checkin-btn");
+  const successMsg     = document.getElementById("banner-success-msg");
+  const collapseBtn    = document.getElementById("banner-collapse-btn");
+
+  if (!banner) return;
+
+  // 배너에 하객 이름 및 관계 표시
+  if (bannerName)     bannerName.innerText     = guestName;
+  if (bannerRelation) bannerRelation.innerText  = relationVal;
+
+  // 배너를 화면에 띄우고, body에 여백 클래스 추가
+  banner.style.display = "block";
+  document.body.classList.add("has-checkin-banner");
+
+  // 이미 이 세션에서 체크인한 경우라면 버튼을 완료 상태로 표시
+  const sessionKey = `visitor_checked_${guestName}`;
+  if (sessionStorage.getItem(sessionKey)) {
+    if (checkinBtn)   { checkinBtn.disabled = true; checkinBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> 체크인 완료'; }
+    if (successMsg)   successMsg.classList.add("show");
+    return;
+  }
+
+  // 체크인 버튼 클릭 이벤트: 직접 누를 때만 DB에 등록
+  if (checkinBtn) {
+    checkinBtn.addEventListener("click", async () => {
+      checkinBtn.disabled = true;
+      checkinBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 등록 중...';
+
+      if (isSupabaseActive) {
+        try {
+          const { error } = await supabaseClient
+            .from("wedding_visitor_logs")
+            .insert({ guest_name: guestName, relation: relationVal });
+
+          if (error) throw error;
+
+          // 성공: 세션에 기록 후 완료 메시지 표시
+          sessionStorage.setItem(sessionKey, "true");
+          checkinBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> 체크인 완료!';
+          if (successMsg) successMsg.classList.add("show");
+          showToast(`🌸 ${guestName} 님, 전광판에 성함이 표시됩니다! 🌸`);
+
+        } catch (e) {
+          console.error("체크인 등록 실패:", e);
+          checkinBtn.disabled = false;
+          checkinBtn.innerHTML = '<i class="fa-solid fa-door-open"></i> 다시 시도하기';
+          showToast("⚠️ 체크인에 실패했습니다. 다시 눌러주세요.");
+        }
+      } else {
+        // Supabase 미연결 시 로컬 완료 처리
+        sessionStorage.setItem(sessionKey, "true");
+        checkinBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> 체크인 완료!';
+        if (successMsg) successMsg.classList.add("show");
+        showToast(`🌸 ${guestName} 님 환영합니다! 🌸`);
+      }
+    });
+  }
+
+  // 배너 접기 버튼
+  if (collapseBtn) {
+    collapseBtn.addEventListener("click", () => {
+      banner.style.animation = "none";
+      banner.style.transform = "translateY(-100%)";
+      banner.style.opacity   = "0";
+      banner.style.transition = "all 0.4s ease";
+      setTimeout(() => {
+        banner.style.display = "none";
+        document.body.classList.remove("has-checkin-banner");
+      }, 400);
+    });
+  }
+}
+
+handleUrlGuestCheckin();
+
 if (btnSubmitCheckin) {
   btnSubmitCheckin.addEventListener("click", async () => {
     const nameStr = checkinNameInput ? checkinNameInput.value.trim() : "";

@@ -16,6 +16,169 @@
 </head>
 <body>
 
+  <!-- ★ 하객 전용 현장 체크인 배너 (URL에 ?guest=이름 파라미터가 있을 때만 표시) ★ -->
+  <div id="guest-checkin-banner" style="display:none;">
+    <style>
+      /* 체크인 배너 전체 오버레이 */
+      #guest-checkin-banner {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        z-index: 9999;
+        background: linear-gradient(135deg, #1a0f06 0%, #2d1f12 100%);
+        border-bottom: 2px solid #D4A373;
+        padding: 0;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+        animation: bannerSlideDown 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+      }
+      @keyframes bannerSlideDown {
+        from { transform: translateY(-100%); opacity: 0; }
+        to   { transform: translateY(0);    opacity: 1; }
+      }
+
+      .checkin-banner-inner {
+        max-width: 480px;
+        margin: 0 auto;
+        padding: 20px 20px 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        text-align: center;
+        font-family: 'Gowun Batang', 'Nanum Myeongjo', Georgia, serif;
+      }
+
+      .checkin-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(212,163,115,0.15);
+        border: 1px solid #D4A373;
+        color: #D4A373;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        padding: 5px 14px;
+        border-radius: 20px;
+      }
+      .checkin-badge i { font-size: 10px; }
+
+      .checkin-greeting {
+        font-size: 15px;
+        color: #C8B8A2;
+        line-height: 1.6;
+      }
+      .checkin-greeting strong {
+        color: #FDFBF7;
+        font-size: 20px;
+        display: block;
+        margin-bottom: 2px;
+      }
+
+      .checkin-relation-tag {
+        font-size: 12px;
+        color: #D4A373;
+        background: rgba(212,163,115,0.1);
+        padding: 3px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(212,163,115,0.3);
+      }
+
+      /* 체크인 버튼 */
+      .checkin-main-btn {
+        width: 100%;
+        background: linear-gradient(135deg, #C9955A 0%, #D4A373 100%);
+        color: #1a0e06;
+        font-family: 'Gowun Batang', serif;
+        font-size: 16px;
+        font-weight: 700;
+        padding: 15px 20px;
+        border: none;
+        border-radius: 14px;
+        cursor: pointer;
+        letter-spacing: 1px;
+        transition: all 0.25s;
+        box-shadow: 0 6px 24px rgba(212,163,115,0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+      .checkin-main-btn:hover  { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(212,163,115,0.5); }
+      .checkin-main-btn:active { transform: translateY(0); }
+      .checkin-main-btn:disabled {
+        background: linear-gradient(135deg, #5a4a35 0%, #6b5840 100%);
+        color: #888;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      /* 체크인 완료 상태 */
+      .checkin-success-msg {
+        display: none;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #03C75A;
+        font-weight: 700;
+        padding: 10px 0 4px;
+      }
+      .checkin-success-msg.show { display: flex; }
+
+      /* 배너 접기 버튼 */
+      .checkin-collapse-btn {
+        font-size: 11px;
+        color: #5A4A3A;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0 0 4px;
+        transition: color 0.2s;
+        font-family: inherit;
+      }
+      .checkin-collapse-btn:hover { color: #8E7C77; }
+
+      /* wedding-container 상단 여백 (배너 높이만큼 밀어내기) */
+      body.has-checkin-banner .wedding-container {
+        padding-top: 220px;
+      }
+    </style>
+
+    <div class="checkin-banner-inner">
+      <div class="checkin-badge">
+        <i class="fa-solid fa-heart"></i> 맞춤 청첩장
+      </div>
+      <div class="checkin-greeting">
+        <strong id="banner-guest-name">홍길동</strong>
+        님, 청첩장을 확인해 주셔서 감사합니다! 💐
+      </div>
+      <div class="checkin-relation-tag" id="banner-guest-relation">신랑 친구</div>
+
+      <!-- 체크인 안내 문구 -->
+      <p style="font-size:12px; color:#6A5A4A; line-height:1.7; font-family:'Gowun Batang',serif;">
+        예식장 도착 시 아래 버튼을 눌러 주세요.<br>
+        입구 전광판에 성함이 표시됩니다. 🌸
+      </p>
+
+      <!-- 체크인 버튼 -->
+      <button class="checkin-main-btn" id="banner-checkin-btn">
+        <i class="fa-solid fa-door-open"></i>
+        예식장 도착 — 체크인하기
+      </button>
+
+      <!-- 완료 메시지 -->
+      <div class="checkin-success-msg" id="banner-success-msg">
+        <i class="fa-solid fa-circle-check"></i>
+        전광판에 성함이 등록되었습니다!
+      </div>
+
+      <!-- 배너 접기 -->
+      <button class="checkin-collapse-btn" id="banner-collapse-btn">
+        ▲ 배너 닫기
+      </button>
+    </div>
+  </div>
+
   <div class="wedding-container">
 
     <!-- ==================== 1. 메인 커버 섹션 ==================== -->
