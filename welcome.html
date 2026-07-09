@@ -5,52 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>실시간 하객 맞이 웰컴 보드 | Welcome Board</title>
   
-  <!-- 우아하고 프리미엄 웨딩 톤에 맞는 명조 서체와 고운바탕 폰트 로드 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Playfair+Display:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- 꽃가루(Confetti) 특수효과 라이브러리 로드 -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  
-  <!-- Supabase 클라이언트 SDK 로드 -->
   <script src="supabase-config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    /* ==========================================
-       [웰컴보드 전용 프리미엄 다크/골드 스타일링]
-       ========================================== */
     :root {
-      --bg-color: #120F0D;        /* 품격 있는 초콜릿 다크 블랙 배경 */
-      --text-gold: #D4A373;       /* 은은한 로즈 골드 */
-      --text-white: #FDFBF7;      /* 부드러운 웜 아이보리 화이트 */
-      --border-color: #3D3028;    /* 어두운 브라운 보더 */
-      --card-bg: rgba(37, 30, 26, 0.85); /* 반투명 카드 배경 */
+      --bg-color: #120F0D;
+      --text-gold: #D4A373;
+      --text-white: #FDFBF7;
+      --border-color: #3D3028;
+      --card-bg: rgba(37, 30, 26, 0.85);
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       background-color: var(--bg-color);
       color: var(--text-white);
       font-family: 'Gowun Batang', 'Nanum Myeongjo', Georgia, serif;
       min-height: 100vh;
-      overflow: hidden; /* 스크롤 차단 (전광판 화면 고정) */
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
-      padding: 40px;
+      padding: 30px 40px 30px 40px;
       position: relative;
     }
 
-    /* 배경 은은한 빛 효과 */
     body::before {
       content: '';
       position: absolute;
@@ -60,85 +48,259 @@
       pointer-events: none;
     }
 
-    /* 1. 상단 헤더 타이틀 */
+    /* ─── 상단 헤더 ─── */
     header {
       text-align: center;
       z-index: 2;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
 
     .main-title {
       font-family: 'Playfair Display', serif;
-      font-size: 28px;
+      font-size: 24px;
       letter-spacing: 6px;
       color: var(--text-gold);
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       font-weight: 300;
     }
 
     .subtitle {
-      font-size: 42px;
+      font-size: 36px;
       font-weight: 700;
       letter-spacing: 2px;
       color: var(--text-white);
       text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
     }
 
-    /* 2. 메인 컨텐츠 영역 (대형 알림판) */
+    /* ─── 중앙 레이아웃 (좌: 키오스크 / 우: 웰컴 전광판) ─── */
+    .main-layout {
+      flex: 1;
+      display: flex;
+      gap: 30px;
+      width: 100%;
+      max-width: 1400px;
+      z-index: 2;
+      align-items: center;
+    }
+
+    /* ─── 좌측: 셀프 체크인 키오스크 패널 ─── */
+    .kiosk-panel {
+      width: 340px;
+      flex-shrink: 0;
+      background: linear-gradient(160deg, rgba(37,30,26,0.95) 0%, rgba(22,17,14,0.95) 100%);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 32px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      backdrop-filter: blur(10px);
+    }
+
+    .kiosk-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 15px;
+      letter-spacing: 3px;
+      color: var(--text-gold);
+      text-align: center;
+      font-weight: 400;
+    }
+
+    .kiosk-desc {
+      font-size: 13px;
+      color: #8E7C77;
+      text-align: center;
+      line-height: 1.7;
+    }
+
+    .kiosk-divider {
+      width: 100%;
+      height: 1px;
+      background: var(--border-color);
+    }
+
+    .kiosk-label {
+      font-size: 12px;
+      color: var(--text-gold);
+      letter-spacing: 1px;
+      align-self: flex-start;
+      margin-bottom: -10px;
+    }
+
+    .kiosk-input {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-white);
+      font-family: 'Gowun Batang', serif;
+      font-size: 18px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      outline: none;
+      transition: border-color 0.3s;
+      text-align: center;
+    }
+
+    .kiosk-input:focus {
+      border-color: var(--text-gold);
+      background: rgba(212,163,115,0.06);
+    }
+
+    .kiosk-input::placeholder {
+      color: #4A3F3B;
+      font-size: 14px;
+    }
+
+    .kiosk-select {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-white);
+      font-family: 'Gowun Batang', serif;
+      font-size: 15px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .kiosk-select option {
+      background-color: #1E1612;
+      color: var(--text-white);
+    }
+
+    .kiosk-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #C9955A 0%, #D4A373 100%);
+      color: #1a120a;
+      font-family: 'Gowun Batang', serif;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: all 0.3s;
+      box-shadow: 0 4px 20px rgba(212,163,115,0.3);
+    }
+
+    .kiosk-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(212,163,115,0.45);
+    }
+
+    .kiosk-btn:active {
+      transform: translateY(0);
+    }
+
+    /* QR 코드 결과 박스 */
+    .kiosk-qr-box {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      background: rgba(212,163,115,0.06);
+      border: 1px dashed var(--text-gold);
+      border-radius: 14px;
+      padding: 20px 16px;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .kiosk-qr-box.show {
+      display: flex;
+    }
+
+    .kiosk-qr-box img {
+      border: 4px solid var(--text-white);
+      border-radius: 10px;
+      width: 160px;
+      height: 160px;
+    }
+
+    .kiosk-qr-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-white);
+      text-align: center;
+    }
+
+    .kiosk-qr-hint {
+      font-size: 12px;
+      color: var(--text-gold);
+      text-align: center;
+      line-height: 1.6;
+      letter-spacing: 0.5px;
+    }
+
+    .kiosk-qr-scan-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #03C75A;
+    }
+
+    .kiosk-qr-scan-indicator i {
+      animation: blink 1.2s infinite;
+    }
+
+    /* ─── 우측: 웰컴 전광판 ─── */
     .welcome-container {
       flex: 1;
       display: flex;
       justify-content: center;
       align-items: center;
-      width: 100%;
-      max-width: 1200px;
-      z-index: 2;
       position: relative;
+      min-height: 340px;
     }
 
-    /* 대기 중 기본 카드 */
     .standby-card {
       text-align: center;
-      padding: 60px 80px;
+      padding: 50px 70px;
       border-radius: 24px;
       border: 1px solid var(--border-color);
       background-color: var(--card-bg);
       backdrop-filter: blur(10px);
       box-shadow: 0 20px 80px rgba(0,0,0,0.5);
       animation: pulse 3s infinite ease-in-out;
-      max-width: 800px;
+      max-width: 700px;
+      width: 100%;
     }
 
     .standby-card i {
-      font-size: 64px;
+      font-size: 56px;
       color: var(--text-gold);
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     .standby-card h3 {
-      font-size: 32px;
-      margin-bottom: 16px;
+      font-size: 28px;
+      margin-bottom: 12px;
       color: var(--text-white);
     }
 
     .standby-card p {
-      font-size: 18px;
+      font-size: 16px;
       color: #8E7C77;
+      line-height: 1.7;
     }
 
-    /* 실시간 입장 하객 전광판 카드 (기본 숨김) */
     .entry-card {
       position: absolute;
       opacity: 0;
-      transform: scale(0.8) translateY(100px);
+      transform: scale(0.8) translateY(60px);
       transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       text-align: center;
-      padding: 80px 100px;
+      padding: 60px 80px;
       border-radius: 30px;
-      background: linear-gradient(135deg, rgba(37,30,26,0.95) 0%, rgba(22,17,14,0.95) 100%);
+      background: linear-gradient(135deg, rgba(37,30,26,0.97) 0%, rgba(22,17,14,0.97) 100%);
       border: 2px solid var(--text-gold);
       box-shadow: 0 30px 100px rgba(212, 163, 115, 0.25);
-      max-width: 900px;
+      max-width: 700px;
       width: 100%;
       pointer-events: none;
     }
@@ -151,68 +313,64 @@
 
     .entry-relation {
       display: inline-block;
-      padding: 8px 24px;
+      padding: 7px 22px;
       border-radius: 30px;
       background-color: rgba(212, 163, 115, 0.15);
       border: 1px solid var(--text-gold);
       color: var(--text-gold);
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 700;
-      margin-bottom: 30px;
+      margin-bottom: 24px;
       letter-spacing: 1px;
     }
 
     .entry-name {
-      font-size: 64px;
+      font-size: 58px;
       font-weight: 700;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
       color: var(--text-white);
       line-height: 1.2;
     }
 
-    .entry-name span {
-      color: var(--text-gold);
-    }
+    .entry-name span { color: var(--text-gold); }
 
     .entry-msg {
-      font-size: 24px;
+      font-size: 20px;
       color: #D6CCC2;
-      line-height: 1.6;
+      line-height: 1.7;
     }
 
-    /* 3. 하단 실시간 최근 방문자 슬라이드/목록 */
+    /* ─── 하단 타임라인 ─── */
     .footer-board {
       width: 100%;
-      max-width: 1200px;
+      max-width: 1400px;
       z-index: 2;
       border-top: 1px solid var(--border-color);
-      padding-top: 24px;
+      padding-top: 20px;
     }
 
     .footer-board-title {
-      font-size: 16px;
+      font-size: 14px;
       color: #8E7C77;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
     .footer-board-title i {
-      color: #03C75A; /* 실시간 감지 그린 색상 */
+      color: #03C75A;
       animation: blink 1.5s infinite;
     }
 
     .timeline-container {
       display: flex;
-      gap: 16px;
+      gap: 14px;
       overflow-x: auto;
-      padding-bottom: 8px;
+      padding-bottom: 6px;
     }
 
-    .timeline-container::-webkit-scrollbar {
-      height: 4px;
-    }
+    .timeline-container::-webkit-scrollbar { height: 4px; }
     .timeline-container::-webkit-scrollbar-thumb {
       background-color: var(--border-color);
       border-radius: 2px;
@@ -222,11 +380,11 @@
       flex-shrink: 0;
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
-      padding: 16px 24px;
+      padding: 14px 20px;
       border-radius: 12px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       animation: cardAppear 0.5s ease-out;
     }
 
@@ -234,99 +392,150 @@
       background-color: rgba(212, 163, 115, 0.1);
       border: 1px solid var(--border-color);
       color: var(--text-gold);
-      padding: 4px 10px;
+      padding: 3px 10px;
       border-radius: 20px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .timeline-name {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--text-white);
-    }
-
-    .timeline-time {
-      font-size: 12px;
-      color: #6A5C58;
-    }
-
-    /* 4. 테스트/데모용 사이드 버튼 (Supabase 미연결 시 작동 확인용) */
-    .demo-btn {
-      position: absolute;
-      bottom: 20px;
-      left: 20px;
-      background-color: rgba(255,255,255,0.05);
-      border: 1px solid var(--border-color);
-      color: #555;
-      padding: 8px 16px;
-      border-radius: 8px;
       font-size: 11px;
+      font-weight: 700;
+    }
+
+    .timeline-name { font-size: 14px; font-weight: 700; color: var(--text-white); }
+    .timeline-time { font-size: 11px; color: #6A5C58; }
+
+    /* 데모 버튼 */
+    .demo-btn {
+      position: fixed;
+      bottom: 16px;
+      left: 16px;
+      background-color: rgba(255,255,255,0.04);
+      border: 1px solid var(--border-color);
+      color: #444;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 10px;
       cursor: pointer;
       z-index: 10;
       transition: all 0.3s;
     }
     .demo-btn:hover {
-      background-color: rgba(212, 163, 115, 0.1);
+      background-color: rgba(212, 163, 115, 0.08);
       color: var(--text-gold);
       border-color: var(--text-gold);
     }
 
-    /* ==========================================
-       [애니메이션 키프레임 정의]
-       ========================================== */
+    /* 애니메이션 */
     @keyframes pulse {
-      0% { transform: scale(1); box-shadow: 0 20px 80px rgba(0,0,0,0.5); }
-      50% { transform: scale(1.02); box-shadow: 0 20px 90px rgba(212, 163, 115, 0.08); }
-      100% { transform: scale(1); box-shadow: 0 20px 80px rgba(0,0,0,0.5); }
+      0%   { transform: scale(1);    box-shadow: 0 20px 80px rgba(0,0,0,0.5); }
+      50%  { transform: scale(1.02); box-shadow: 0 20px 90px rgba(212,163,115,0.08); }
+      100% { transform: scale(1);    box-shadow: 0 20px 80px rgba(0,0,0,0.5); }
     }
-
     @keyframes blink {
-      0% { opacity: 0.2; }
-      50% { opacity: 1; }
+      0%   { opacity: 0.2; }
+      50%  { opacity: 1; }
       100% { opacity: 0.2; }
     }
-
     @keyframes cardAppear {
       from { opacity: 0; transform: translateX(30px); }
-      to { opacity: 1; transform: translateX(0); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
 
-  <!-- 1. 상단 타이틀 -->
+  <!-- 상단 타이틀 -->
   <header>
     <div class="main-title">WELCOME BOARD</div>
     <div class="subtitle">소중한 발걸음 감사드립니다</div>
   </header>
 
-  <!-- 2. 중앙 웰컴 전광판 -->
-  <div class="welcome-container">
-    
-    <!-- 대기 화면 카드 -->
-    <div class="standby-card" id="standby-card">
-      <i class="fa-solid fa-qrcode"></i>
-      <h3>실시간 입장 체크인 대기 중</h3>
-      <p>예식장 입구에 마련된 QR코드를 촬영하고 입장 등록을 완료해 주세요.</p>
+  <!-- 중앙 레이아웃 -->
+  <div class="main-layout">
+
+    <!-- ★ 좌측: 셀프 체크인 키오스크 패널 ★ -->
+    <div class="kiosk-panel">
+      <div class="kiosk-title">SELF CHECK-IN</div>
+      <div class="kiosk-desc">
+        성함과 관계를 입력하시면<br>
+        전용 QR코드가 생성됩니다.<br>
+        스마트폰으로 스캔해 주세요. 🌸
+      </div>
+      <div class="kiosk-divider"></div>
+
+      <div class="kiosk-label">성함</div>
+      <input
+        type="text"
+        class="kiosk-input"
+        id="kiosk-name-input"
+        placeholder="이름을 입력하세요"
+        maxlength="10"
+        autocomplete="off"
+      >
+
+      <div class="kiosk-label">관계</div>
+      <select class="kiosk-select" id="kiosk-relation-select">
+        <option value="신랑 친구">신랑 친구</option>
+        <option value="신부 친구">신부 친구</option>
+        <option value="신랑 직장동료">신랑 직장동료</option>
+        <option value="신부 직장동료">신부 직장동료</option>
+        <option value="신랑측 친척">신랑측 친척</option>
+        <option value="신부측 친척">신부측 친척</option>
+        <option value="신랑 선후배">신랑 선후배</option>
+        <option value="신부 선후배">신부 선후배</option>
+        <option value="하객">하객</option>
+      </select>
+
+      <button class="kiosk-btn" id="kiosk-generate-btn">
+        <i class="fa-solid fa-qrcode"></i>&nbsp; 내 QR 코드 생성
+      </button>
+
+      <!-- QR 결과 박스 -->
+      <div class="kiosk-qr-box" id="kiosk-qr-box">
+        <div class="kiosk-qr-name" id="kiosk-qr-name"></div>
+        <img id="kiosk-qr-img" src="" alt="QR 코드">
+        <div class="kiosk-qr-scan-indicator">
+          <i class="fa-solid fa-circle"></i> 스마트폰으로 스캔해 주세요
+        </div>
+        <div class="kiosk-qr-hint">
+          QR을 스캔하면 청첩장 페이지로 이동하며<br>
+          이 화면에 이름이 표시됩니다 💐
+        </div>
+      </div>
     </div>
 
-    <!-- 실시간 하객 등장 시 활성화되는 웰컴 카드 -->
-    <div class="entry-card" id="entry-card">
-      <div class="entry-relation" id="entry-relation">신랑 친구</div>
-      <div class="entry-name"><span id="entry-name">홍길동</span> 님</div>
-      <div class="entry-msg">결혼식장에 도착하셨습니다.<br>소중한 축하와 발걸음에 깊이 감사드립니다.</div>
+    <!-- 우측: 실시간 웰컴 전광판 -->
+    <div class="welcome-container">
+      <!-- 대기 화면 -->
+      <div class="standby-card" id="standby-card">
+        <i class="fa-solid fa-heart"></i>
+        <h3>실시간 입장 체크인 대기 중</h3>
+        <p>
+          좌측 키오스크에서 성함을 입력하고<br>
+          QR 코드를 스캔하시면 이곳에 표시됩니다.
+        </p>
+      </div>
+
+      <!-- 하객 입장 환영 카드 -->
+      <div class="entry-card" id="entry-card">
+        <div class="entry-relation" id="entry-relation">신랑 친구</div>
+        <div class="entry-name"><span id="entry-name">홍길동</span> 님</div>
+        <div class="entry-msg">
+          결혼식장에 도착하셨습니다.<br>
+          소중한 축하와 발걸음에 깊이 감사드립니다.
+        </div>
+      </div>
     </div>
 
   </div>
 
-  <!-- 3. 하단 최근 입장 타임라인 리스트 -->
+  <!-- 하단 타임라인 -->
   <div class="footer-board">
     <div class="footer-board-title">
       <i class="fa-solid fa-circle"></i> 실시간 하객 도착 타임라인 (최근 10명)
     </div>
     <div class="timeline-container" id="timeline-container">
-      <!-- 동적으로 하객 카드가 주입됩니다. -->
       <div class="timeline-card" style="opacity: 0.5;">
         <span class="timeline-badge">안내</span>
         <span class="timeline-name">방문객을 대기하고 있습니다.</span>
@@ -334,24 +543,32 @@
     </div>
   </div>
 
-  <!-- 테스트용 데모 버튼 -->
-  <button class="demo-btn" id="demo-btn">모의 테스트 체크인 실행</button>
+  <!-- 데모 버튼 -->
+  <button class="demo-btn" id="demo-btn">모의 테스트 체크인</button>
 
   <script>
-    /* ==========================================================================
-       [웰컴 보드 구동 스크립트]
-       ========================================================================== */
-    const standbyCard = document.getElementById("standby-card");
-    const entryCard = document.getElementById("entry-card");
-    const entryRelation = document.getElementById("entry-relation");
-    const entryName = document.getElementById("entry-name");
+    /* ==========================================================
+       웰컴 보드 구동 스크립트
+       ========================================================== */
+    const standbyCard       = document.getElementById("standby-card");
+    const entryCard         = document.getElementById("entry-card");
+    const entryRelationEl   = document.getElementById("entry-relation");
+    const entryNameEl       = document.getElementById("entry-name");
     const timelineContainer = document.getElementById("timeline-container");
-    const demoBtn = document.getElementById("demo-btn");
+    const demoBtn           = document.getElementById("demo-btn");
+
+    // 키오스크 요소
+    const kioskNameInput    = document.getElementById("kiosk-name-input");
+    const kioskRelationSel  = document.getElementById("kiosk-relation-select");
+    const kioskGenerateBtn  = document.getElementById("kiosk-generate-btn");
+    const kioskQrBox        = document.getElementById("kiosk-qr-box");
+    const kioskQrImg        = document.getElementById("kiosk-qr-img");
+    const kioskQrName       = document.getElementById("kiosk-qr-name");
 
     let isSupabaseActive = false;
     let supabaseClient = null;
 
-    // 1. Supabase 초기화 및 연동 점검
+    /* ── Supabase 초기화 ── */
     if (
       typeof SUPABASE_CONFIG !== "undefined" &&
       SUPABASE_CONFIG.SUPABASE_URL &&
@@ -362,95 +579,62 @@
         const { createClient } = supabase;
         supabaseClient = createClient(SUPABASE_CONFIG.SUPABASE_URL, SUPABASE_CONFIG.SUPABASE_ANON_KEY);
         isSupabaseActive = true;
-        console.log("Supabase 연동 완료. 실시간 웰컴보드 활성화.");
+        console.log("✅ Supabase 웰컴보드 연동 완료");
       } catch (e) {
         console.error("Supabase 초기화 오류:", e);
       }
     }
 
-    // 2. 하객 입장 애니메이션 연출 함수 (팝업 + 꽃가루)
+    /* ── 입장 환영 애니메이션 ── */
     let animationTimeout = null;
 
     function triggerWelcomeAnimation(guestName, relation) {
-      // 대기 화면 숨기고 팝업 카드 활성화
       standbyCard.style.display = "none";
-      
-      entryRelation.innerText = relation || "하객";
-      entryName.innerText = guestName;
-      
-      // 웰컴 팝업 활성화 클래스 주입
+      entryRelationEl.innerText = relation || "하객";
+      entryNameEl.innerText = guestName;
       entryCard.classList.add("show");
 
-      // canvas-confetti 꽃가루 이펙트 발사!
       fireConfettiEffect();
 
-      // 기존 타이머가 있으면 초기화
       if (animationTimeout) clearTimeout(animationTimeout);
-
-      // 4.5초 뒤에 원래 대기 상태로 우아하게 복원시킵니다.
       animationTimeout = setTimeout(() => {
         entryCard.classList.remove("show");
-        // 약간의 전환 대기 시간 후 대기 카드 다시 띄움
         setTimeout(() => {
           if (!entryCard.classList.contains("show")) {
             standbyCard.style.display = "block";
           }
         }, 600);
-      }, 4500);
+      }, 5000);
     }
 
-    // 꽃가루 발사 이펙트
+    /* ── 꽃가루 이펙트 ── */
     function fireConfettiEffect() {
-      confetti({
-        particleCount: 150,
-        spread: 80,
-        origin: { y: 0.75 }
-      });
-
-      setTimeout(() => {
-        confetti({
-          particleCount: 50,
-          angle: 60,
-          spread: 55,
-          origin: { x: 0 }
-        });
-      }, 200);
-
-      setTimeout(() => {
-        confetti({
-          particleCount: 50,
-          angle: 120,
-          spread: 55,
-          origin: { x: 1 }
-        });
-      }, 400);
+      confetti({ particleCount: 150, spread: 80, origin: { y: 0.75 } });
+      setTimeout(() => confetti({ particleCount: 50, angle: 60,  spread: 55, origin: { x: 0 } }), 200);
+      setTimeout(() => confetti({ particleCount: 50, angle: 120, spread: 55, origin: { x: 1 } }), 400);
     }
 
-    // 3. 타임라인(하단 목록) 갱신 함수 (테이블명 wedding_visitor_logs 로 변경 적용)
+    /* ── 하단 타임라인 갱신 ── */
     async function loadRecentTimeline() {
       if (!isSupabaseActive) return;
-
       try {
         const { data, error } = await supabaseClient
-          .from("wedding_visitor_logs") // 테이블명 변경 완료
+          .from("wedding_visitor_logs")
           .select("*")
           .order("visited_at", { ascending: false })
           .limit(10);
-
         if (error) throw error;
-
         if (data && data.length > 0) {
           timelineContainer.innerHTML = "";
           data.forEach(msg => {
-            const dateObj = new Date(msg.visited_at);
-            const timeString = `${String(dateObj.getHours()).padStart(2,'0')}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
-
+            const d = new Date(msg.visited_at);
+            const timeStr = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
             const card = document.createElement("div");
             card.className = "timeline-card";
             card.innerHTML = `
               <span class="timeline-badge">${msg.relation}</span>
               <span class="timeline-name">${msg.guest_name} 님</span>
-              <span class="timeline-time">${timeString}</span>
+              <span class="timeline-time">${timeStr}</span>
             `;
             timelineContainer.appendChild(card);
           });
@@ -460,49 +644,71 @@
       }
     }
 
-    // 4. Supabase Realtime 실시간 이벤트 구독 (테이블명 wedding_visitor_logs 로 변경 적용)
+    /* ── Supabase Realtime 구독 ── */
     if (isSupabaseActive) {
       loadRecentTimeline();
-
       supabaseClient
-        .channel("public:wedding_visitor_logs") // 채널명 변경
+        .channel("public:wedding_visitor_logs")
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "wedding_visitor_logs" }, payload => {
-          console.log("새로운 하객 입장 감지:", payload.new);
           triggerWelcomeAnimation(payload.new.guest_name, payload.new.relation);
           setTimeout(loadRecentTimeline, 1000);
         })
         .subscribe();
     }
 
-    // 5. 테스트 데모 버튼 구동
-    const mockNames = ["김태희", "이병헌", "최민식", "송강호", "전지현", "유재석", "정우성", "한지민"];
-    const mockRelations = ["신랑 친구", "신부 동료", "신랑 대학동기", "신부 사촌", "혼주 친척", "신부 친구"];
+    /* ── ★ 키오스크 QR 생성 로직 ★ ── */
+    function generateKioskQr() {
+      const name     = kioskNameInput.value.trim();
+      const relation = kioskRelationSel.value;
+
+      if (!name) {
+        kioskNameInput.focus();
+        kioskNameInput.style.borderColor = "#E63946";
+        setTimeout(() => { kioskNameInput.style.borderColor = ""; }, 1500);
+        return;
+      }
+
+      // 웰컴보드와 동일한 도메인 기준으로 청첩장 메인 URL 생성
+      // welcome.html → index.html 로 이동하도록 경로 조정
+      const basePath = window.location.href.replace("welcome.html", "index.html").split("?")[0];
+      const guestUrl = `${basePath}?guest=${encodeURIComponent(name)}&relation=${encodeURIComponent(relation)}`;
+      const qrUrl    = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(guestUrl)}&color=000000&bgcolor=ffffff&qzone=1&margin=0&format=png`;
+
+      // QR 이미지 및 이름 표시
+      kioskQrImg.src = qrUrl;
+      kioskQrName.innerText = `${name} 님`;
+      kioskQrBox.classList.add("show");
+
+      // 입력창 초기화 → 다음 사람 바로 입력 가능
+      kioskNameInput.value = "";
+      kioskNameInput.focus();
+    }
+
+    kioskGenerateBtn.addEventListener("click", generateKioskQr);
+
+    // Enter 키로도 QR 생성 가능
+    kioskNameInput.addEventListener("keydown", e => {
+      if (e.key === "Enter") { e.preventDefault(); generateKioskQr(); }
+    });
+
+    /* ── 데모 버튼 ── */
+    const mockNames    = ["김태희", "이병헌", "최민식", "송강호", "전지현", "유재석", "정우성", "한지민"];
+    const mockRelations = ["신랑 친구", "신부 직장동료", "신랑 대학동기", "신부 친척", "하객"];
 
     demoBtn.addEventListener("click", () => {
-      const randomName = mockNames[Math.floor(Math.random() * mockNames.length)];
-      const randomRelation = mockRelations[Math.floor(Math.random() * mockRelations.length)];
-      
-      triggerWelcomeAnimation(randomName, randomRelation);
+      const name     = mockNames[Math.floor(Math.random() * mockNames.length)];
+      const relation = mockRelations[Math.floor(Math.random() * mockRelations.length)];
+      triggerWelcomeAnimation(name, relation);
 
-      const now = new Date();
+      const now     = new Date();
       const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-      
-      if (timelineContainer.innerText.includes("방문객을 대기하고 있습니다")) {
-        timelineContainer.innerHTML = "";
-      }
+      if (timelineContainer.innerText.includes("방문객을 대기")) timelineContainer.innerHTML = "";
 
       const card = document.createElement("div");
       card.className = "timeline-card";
-      card.innerHTML = `
-        <span class="timeline-badge">${randomRelation}</span>
-        <span class="timeline-name">${randomName} 님</span>
-        <span class="timeline-time">${timeStr}</span>
-      `;
+      card.innerHTML = `<span class="timeline-badge">${relation}</span><span class="timeline-name">${name} 님</span><span class="timeline-time">${timeStr}</span>`;
       timelineContainer.insertBefore(card, timelineContainer.firstChild);
-
-      if (timelineContainer.children.length > 10) {
-        timelineContainer.removeChild(timelineContainer.lastChild);
-      }
+      if (timelineContainer.children.length > 10) timelineContainer.removeChild(timelineContainer.lastChild);
     });
   </script>
 </body>
