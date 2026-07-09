@@ -653,9 +653,16 @@ async function generateGuestQrAction() {
   // QR API 호출
   const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(finalUrl)}&color=000000&bgcolor=ffffff&qzone=1&margin=0&format=png`;
   
+  // 청첩장 메인 주소 생성 (하객이 직접 카톡방에서 클릭하는 용도)
+  const baseUri = window.location.origin + window.location.pathname;
+  const invitationUrl = `${baseUri}?guest=${encodeURIComponent(name)}&relation=${encodeURIComponent(relation)}`;
+
   if (generatedQrContainer) generatedQrContainer.innerHTML = `<img src="${qrApiUrl}" alt="하객 전용 QR" style="border:4px solid white;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,0.3);">`;
-  if (generatedLinkText) generatedLinkText.innerText = finalUrl;
-  if (btnCopyGeneratedLink) btnCopyGeneratedLink.setAttribute("data-copy-target", finalUrl);
+  if (generatedLinkText) generatedLinkText.innerText = invitationUrl; // 화면 표시 텍스트도 청첩장 주소로 변경
+  if (btnCopyGeneratedLink) {
+    btnCopyGeneratedLink.setAttribute("data-copy-target", finalUrl);       // QR 스캔용 (티켓 확인 페이지)
+    btnCopyGeneratedLink.setAttribute("data-invitation-target", invitationUrl); // 하객 터치용 (청첩장 메인)
+  }
   if (qrResultBox) qrResultBox.style.display = "block";
   
   showToast(`${name} 님의 모바일 입장 티켓 QR이 발급되었습니다.`);
@@ -688,7 +695,8 @@ function fetchImageAsBase64(url) {
 if (btnCopyGeneratedLink) {
   btnCopyGeneratedLink.addEventListener("click", async () => {
     const target = btnCopyGeneratedLink.getAttribute("data-copy-target");
-    if (!target) return;
+    const invitation = btnCopyGeneratedLink.getAttribute("data-invitation-target");
+    if (!target || !invitation) return;
 
     const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(target)}&color=000000&bgcolor=ffffff&qzone=1&margin=0&format=png`;
 
@@ -700,10 +708,11 @@ if (btnCopyGeneratedLink) {
         const base64Image = await fetchImageAsBase64(qrApiUrl);
 
         // Rich Text (HTML) 형태로 복사하여 카카오톡에 이미지 파일 + 텍스트 링크가 한번에 삽입되도록 처리
-        const htmlText = `<img src="${base64Image}" width="200" height="200" /><br><br><a href="${target}">🎫 입장 티켓 확인 및 모바일 청첩장 링크 클릭하기</a>`;
+        // ─ 이미지 스캔 시 ticket.html(티켓)로 가고, 아래 텍스트 클릭 시 index.html(청첩장)로 이동하도록 확실히 이원화합니다.
+        const htmlText = `<img src="${base64Image}" width="200" height="200" /><br><br><a href="${invitation}">💌 모바일 청첩장 링크 클릭하기</a>`;
         
         const blobHtml = new Blob([htmlText], { type: 'text/html' });
-        const blobText = new Blob([target], { type: 'text/plain' });
+        const blobText = new Blob([invitation], { type: 'text/plain' });
 
         const data = [new ClipboardItem({
           'text/html': blobHtml,
@@ -713,12 +722,12 @@ if (btnCopyGeneratedLink) {
         await navigator.clipboard.write(data);
         showToast("📸 QR 파일과 링크가 한 번에 복사되었습니다! 카톡에 붙여넣으세요.");
       } else {
-        copyToClipboard(target);
+        copyToClipboard(invitation);
         showToast("링크 주소가 복사되었습니다.");
       }
     } catch (err) {
       console.warn("Base64 복합 복사 실패, 일반 주소 복사로 전환:", err);
-      copyToClipboard(target);
+      copyToClipboard(invitation);
       showToast("링크 주소가 복사되었습니다.");
     }
   });
