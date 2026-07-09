@@ -318,6 +318,51 @@
 
       <div class="settings-body">
 
+        <!-- [현장 웰컴 보드 & 하객 추적 관리] -->
+        <div class="settings-group">
+          <h3 class="settings-group-title">🏷️ 현장 웰컴 보드 & 하객 방문 추적</h3>
+          <p class="transport-settings-desc">예식장 전광판 및 모니터로 하객 입장을 실시간 관제할 수 있습니다.</p>
+          
+          <div class="settings-field">
+            <label>1. 예식장 모니터 웰컴 보드 연결 주소</label>
+            <a href="welcome.html" target="_blank" class="map-link naver" style="text-align: center; text-decoration: none; padding: 10px 0; margin-top: 5px;">
+              웰컴 보드 전광판 화면 열기 <i class="fa-solid fa-up-right-from-square"></i>
+            </a>
+            <span class="field-hint">※ 예식장 입구 모니터에 이 링크 화면을 전체화면으로 띄워 두세요.</span>
+          </div>
+
+          <div class="settings-field" style="margin-top: 15px;">
+            <label>2. 개별 하객용 입장 QR 및 링크 생성기</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="admin-guest-name-input" placeholder="하객 이름을 입력하세요 (예: 홍길동)" style="flex: 1;">
+              <select id="admin-guest-relation-select" style="padding: 10px; border-radius: 8px; background: var(--settings-input-bg); border: 1px solid var(--settings-border); color: #fff; font-family: inherit;">
+                <option value="신랑 친구">신랑 친구</option>
+                <option value="신부 친구">신부 친구</option>
+                <option value="신랑측 하객">신랑측 하객</option>
+                <option value="신부측 하객">신부측 하객</option>
+              </select>
+            </div>
+            <button class="btn-submit" id="btn-generate-guest-qr" style="margin-top: 8px; padding: 10px 0; font-size: 13px;">이 하객 전용 QR/링크 만들기</button>
+          </div>
+
+          <!-- QR 생성 결과 노출 영역 -->
+          <div id="qr-result-box" style="display: none; text-align: center; margin-top: 15px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; border: 1px dashed var(--settings-border);">
+            <div id="generated-qr-image-container" style="margin-bottom: 10px;"></div>
+            <p id="generated-link-text" class="field-hint" style="word-break: break-all; margin-bottom: 8px; color: #fff;"></p>
+            <button class="btn-copy" id="btn-copy-generated-link" style="padding: 8px 16px;">링크 복사</button>
+          </div>
+
+          <div class="settings-field" style="margin-top: 20px;">
+            <label>3. 실시간 도착 하객 명단 (최근 15명)</label>
+            <div id="admin-visitor-list" style="max-height: 180px; overflow-y: auto; background: var(--settings-input-bg); border: 1px solid var(--settings-border); border-radius: 8px; padding: 8px; margin-top: 5px;">
+              <p class="field-hint" style="text-align: center; padding: 20px 0;">도착한 하객이 아직 없습니다.</p>
+            </div>
+            <button class="btn-reset-settings" id="btn-clear-visitors" style="margin-top: 8px; padding: 6px 0; font-size: 11px; border-color: rgba(230,57,70,0.3); color: #888;">
+              <i class="fa-solid fa-trash-can"></i> 방문자 기록 전체 초기화
+            </button>
+          </div>
+        </div>
+
         <!-- [신랑측 정보] -->
         <div class="settings-group">
           <h3 class="settings-group-title">💍 신랑측 정보</h3>
@@ -459,51 +504,6 @@
           <div class="settings-field">
             <label for="cfg-parkingInfo">주차 안내</label>
             <input type="text" id="cfg-parkingInfo" data-cfg-key="parkingInfo" placeholder="예: 지하 1~3층 무료 주차 2시간" maxlength="60">
-          </div>
-        </div>
-
-        <!-- [현장 웰컴 보드 & 하객 추적 관리] -->
-        <div class="settings-group">
-          <h3 class="settings-group-title">🏷️ 현장 웰컴 보드 & 하객 방문 추적</h3>
-          <p class="transport-settings-desc">예식장 전광판 및 모니터로 하객 입장을 실시간 관제할 수 있습니다.</p>
-          
-          <div class="settings-field">
-            <label>1. 예식장 모니터 웰컴 보드 연결 주소</label>
-            <a href="welcome.html" target="_blank" class="map-link naver" style="text-align: center; text-decoration: none; padding: 10px 0; margin-top: 5px;">
-              웰컴 보드 전광판 화면 열기 <i class="fa-solid fa-up-right-from-square"></i>
-            </a>
-            <span class="field-hint">※ 예식장 입구 모니터에 이 링크 화면을 전체화면으로 띄워 두세요.</span>
-          </div>
-
-          <div class="settings-field" style="margin-top: 15px;">
-            <label>2. 개별 하객용 입장 QR 및 링크 생성기</label>
-            <div style="display: flex; gap: 8px;">
-              <input type="text" id="admin-guest-name-input" placeholder="하객 이름을 입력하세요 (예: 홍길동)" style="flex: 1;">
-              <select id="admin-guest-relation-select" style="padding: 10px; border-radius: 8px; background: var(--settings-input-bg); border: 1px solid var(--settings-border); color: #fff; font-family: inherit;">
-                <option value="신랑 친구">신랑 친구</option>
-                <option value="신부 친구">신부 친구</option>
-                <option value="신랑측 하객">신랑측 하객</option>
-                <option value="신부측 하객">신부측 하객</option>
-              </select>
-            </div>
-            <button class="btn-submit" id="btn-generate-guest-qr" style="margin-top: 8px; padding: 10px 0; font-size: 13px;">이 하객 전용 QR/링크 만들기</button>
-          </div>
-
-          <!-- QR 생성 결과 노출 영역 -->
-          <div id="qr-result-box" style="display: none; text-align: center; margin-top: 15px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; border: 1px dashed var(--settings-border);">
-            <div id="generated-qr-image-container" style="margin-bottom: 10px;"></div>
-            <p id="generated-link-text" class="field-hint" style="word-break: break-all; margin-bottom: 8px; color: #fff;"></p>
-            <button class="btn-copy" id="btn-copy-generated-link" style="padding: 8px 16px;">링크 복사</button>
-          </div>
-
-          <div class="settings-field" style="margin-top: 20px;">
-            <label>3. 실시간 도착 하객 명단 (최근 15명)</label>
-            <div id="admin-visitor-list" style="max-height: 180px; overflow-y: auto; background: var(--settings-input-bg); border: 1px solid var(--settings-border); border-radius: 8px; padding: 8px; margin-top: 5px;">
-              <p class="field-hint" style="text-align: center; padding: 20px 0;">도착한 하객이 아직 없습니다.</p>
-            </div>
-            <button class="btn-reset-settings" id="btn-clear-visitors" style="margin-top: 8px; padding: 6px 0; font-size: 11px; border-color: rgba(230,57,70,0.3); color: #888;">
-              <i class="fa-solid fa-trash-can"></i> 방문자 기록 전체 초기화
-            </button>
           </div>
         </div>
 
