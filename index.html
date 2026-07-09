@@ -320,14 +320,7 @@
         </div>
       </div>
       
-      <!-- [현장 도착 체크인 배너] -->
-      <!-- 하객이 실제 식장에 도착했을 때 전광판에 본인 이름을 띄울 수 있도록 유도합니다 -->
-      <div class="checkin-banner fade-in">
-        <div class="checkin-banner-icon"><i class="fa-solid fa-square-check"></i></div>
-        <h3>식장에 도착하셨나요?</h3>
-        <p>식장 웰컴 스크린에 환영 메시지를 띄워 보세요!</p>
-        <button class="btn-open-checkin" id="btn-open-checkin">도착 체크인 하기</button>
-      </div>
+
     </section>
 
     <!-- ==================== 6. 보안 방명록 섹션 ==================== -->
@@ -700,40 +693,7 @@
     </div><!-- /settings-panel-inner -->
   </div><!-- /settings-panel-overlay -->
 
-  <!-- ===================================================== -->
-  <!-- [NEW] 하객용 현장 체크인 입력 모달창                  -->
-  <!-- 하객이 식장 입구에서 직접 정보를 등록할 수 있는 폼 모달 -->
-  <!-- ===================================================== -->
-  <div class="modal-overlay" id="checkin-modal">
-    <div class="modal-content" style="border-top: 4px solid var(--point-gold);">
-      <div class="admin-pw-icon" style="color: var(--point-gold);"><i class="fa-solid fa-building-circle-check"></i></div>
-      <h3>현장 도착 체크인</h3>
-      <p>식장 모니터(웰컴 보드)에 반가운 이름과<br>축하 메시지를 띄워 보세요!</p>
-      
-      <div class="guestbook-form" style="box-shadow: none; border: none; padding: 0; margin-bottom: 20px; background: transparent; text-align: left;">
-        <div class="input-group" style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 6px;">
-          <label for="checkin-name" style="font-size: 12px; color: var(--text-muted); font-weight: 700;">성함 (이름)</label>
-          <input type="text" id="checkin-name" placeholder="방문자 성함을 입력해 주세요" required maxlength="10" style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 13px; background-color: var(--bg-color); color: var(--text-dark);">
-        </div>
-        <div class="input-group" style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 6px;">
-          <label for="checkin-side" style="font-size: 12px; color: var(--text-muted); font-weight: 700;">구분</label>
-          <select id="checkin-side" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-color); font-family: inherit; font-size: 13px; color: var(--text-dark);">
-            <option value="groom">신랑측 하객</option>
-            <option value="bride">신부측 하객</option>
-          </select>
-        </div>
-        <div class="input-group" style="display: flex; flex-direction: column; gap: 6px;">
-          <label for="checkin-relation" style="font-size: 12px; color: var(--text-muted); font-weight: 700;">관계</label>
-          <input type="text" id="checkin-relation" placeholder="예: 친구, 회사동료, 사촌 등" required maxlength="15" style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 13px; background-color: var(--bg-color); color: var(--text-dark);">
-        </div>
-      </div>
 
-      <div class="modal-buttons">
-        <button class="btn-modal btn-cancel" id="btn-close-checkin-modal">닫기</button>
-        <button class="btn-modal btn-submit" id="btn-submit-checkin" style="background-color: var(--point-gold); color: #fff; box-shadow: none; display: flex; align-items: center; justify-content: center;">입장 등록하기</button>
-      </div>
-    </div>
-  </div>
 
   <script src="supabase-config.js"></script>
   <!-- Supabase JS SDK (CDN) -->
