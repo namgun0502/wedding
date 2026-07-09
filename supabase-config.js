@@ -14,8 +14,8 @@
 
 const SUPABASE_CONFIG = {
   // 여기에 프로젝트 URL을 넣어주세요. (예: "https://abcdefghyjkl.supabase.co")
-  SUPABASE_URL: "YOUR_SUPABASE_PROJECT_URL_HERE",
+  SUPABASE_URL: "https://qzhgsshyhmnczmreagqd.supabase.co",
   
   // 여기에 anon public 키를 넣어주세요. (예: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3M...")
-  SUPABASE_ANON_KEY: "YOUR_SUPABASE_ANON_KEY_HERE"
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6aGdzc2h5aG1uY3ptcmVhZ3FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNzc0NzksImV4cCI6MjA5Nzg1MzQ3OX0.2NZxyClmIpj7WtUuZtexZqAMuTnC7udF5FejwitzvcU"
 };
