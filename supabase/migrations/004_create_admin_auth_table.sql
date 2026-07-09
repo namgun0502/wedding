@@ -10,23 +10,21 @@ CREATE TABLE IF NOT EXISTS public.wedding_admin_auth (
     CONSTRAINT check_single_admin CHECK (id = 1)
 );
 
--- 2. 초기 기본 비밀번호 설정 (1234 를 XOR + Base64 해시한 값: MTcsMTYsMTUsMTQ=)
+-- 2. 초기 기본 비밀번호 설정 (1234 를 XOR + Base64 해시한 진짜 올바른 값: MTI0LDEyNywxMjYsMTIx)
 -- 만약 기존에 데이터가 없다면 기본값 1234로 초기 세팅합니다.
 INSERT INTO public.wedding_admin_auth (id, password_hash)
-VALUES (1, 'MTcsMTYsMTUsMTQ=')
+VALUES (1, 'MTI0LDEyNywxMjYsMTIx')
 ON CONFLICT (id) DO NOTHING;
 
 -- 3. RLS(Row Level Security) 활성화
 ALTER TABLE public.wedding_admin_auth ENABLE ROW LEVEL SECURITY;
 
 -- 4. RLS 보안 정책 설정
--- 로그인 검증을 위해 누구나 비밀번호 해시값을 읽을 수 있게 허용합니다. (SELECT)
 CREATE POLICY "비밀번호 검증 누구나 읽기 허용" 
 ON public.wedding_admin_auth 
 FOR SELECT 
 USING (true);
 
--- 관리자가 관리자 화면에서 비밀번호를 변경해야 하므로 업데이트를 허용합니다. (UPDATE)
 CREATE POLICY "비밀번호 누구나 수정 허용" 
 ON public.wedding_admin_auth 
 FOR UPDATE 
